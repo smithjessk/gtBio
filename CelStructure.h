@@ -1,5 +1,8 @@
 #include <cinttypes>
 #include <assert.h>
+#include <iostream>
+
+using namespace std;
 
 /*
 	This file contain classes that form part of Affymatrix CEL V4 binary format
@@ -11,21 +14,25 @@
 
 class TopHeader {
 	struct TopHeaderData {
-		int32_t macic; // should be 64
+		int32_t magic; // should be 64
 		int32_t version; // should be 4
 		int32_t numCols; 
 		int32_t numRows;
 		int32_t numCells; // should be numCols*numRows
-		int32_t headerLength; // this is the CEL v3 header length
 	};
 
 	TopHeaderData* data;
 
 public:
-	TopHeader(void* where):
-		data((TopHeaderData*) where) {}
+	TopHeader(char* where):
+		data((TopHeaderData*) where) {
+			cout << "Magic: " << data->magic << endl;
+			cout << "Version: " << data->version << endl;
+			cout << "numCols: " << data->numCols << endl;
+			cout << "numRows: " << data->numRows << endl;
+		}
 
-	void* getJump(void){ return (void*)data + sizeof(TopHeaderData);}
+	char* getJump(void){ return (char*)data + sizeof(TopHeaderData);}
 	int32_t getNumRows(void){ return data->numRows; }
 	int32_t getNumCols(void){ return data->numCols; }
 };
@@ -36,13 +43,14 @@ struct CELString {
 	char* str; // pointer to string. WARNING: This is not \0 terminated
 	
 	// Constructor from binary layout
-	CELString(void* where){
+	CELString(char* where){
 		size = *((int32_t*) where); // layout the int at the begining
-		str = ((char*) where) + sizeof(int32_t);
+		cout << "String of size " << size << endl; 
+		str = (char*) where + sizeof(int32_t);
 	}
 
 	// how much to jump in the binary layout to get the next header
-	void* getJump(void){ return (void*)str + size; }
+	char* getJump(void){ return (char*)str + size; }
 };
 
 
@@ -57,10 +65,15 @@ class TopHeader2 {
 	TopHeader2Data* data;
 
 public:
-	TopHeader2(void* where):
-		data((TopHeader2Data) where) {}
+	TopHeader2(char* where):
+		data((TopHeader2Data*) where) {
+			cout << "Margin: " << data->margin << endl;
+			cout << "numOutliers: " << data->numOutliers << endl;
+			cout << "numMaskedCells: " << data->numMaskedCells << endl;
+			cout << "numSubgrids: " << data->numSubgrids << endl;
+		}
 
-	void* getJump(void){ return (void*) data + sizeof(TopHeader2Data); }	
+	char* getJump(void){ return (char*) data + sizeof(TopHeader2Data); }	
 };
 
 
@@ -72,33 +85,33 @@ class CellEntries {
 	};
 
 	int32_t numRows; 
-	int32_t numColumns;
+	int32_t numCols;
 	CellEntry* cells; // the pointer to cells
 
 public: 
-	CellEntries(int32_t numRows, int32_t numCols, void* where):
+	CellEntries(int32_t numRows, int32_t numCols, char* where):
 		numRows(numRows), 
 		numCols(numCols), 
 		cells((CellEntry*) where) {}
 
-	void* getJump(void){ 
-		return (void*) cells + 
-			numRows*numCols* sizeof(CellEntry); 
+	char* getJump(void){ 
+		return (char*) cells + numRows*numCols* sizeof(CellEntry);
 	}
 
 	// maybe this should check
-	CellEntry getValue(row, col){ 
-		assert(row<numRows && col<numCols );
+	CellEntry getValue(int row, int col){ 
+		assert(row < numRows && col < numCols );
 		return cells[row*numCols + col]; 
 	}
-	float getIntensity(row, col){ return getValue(row,col).intensity; }
-	float getStdDev(row, col){ return getValue(row,col).intensity; }
-	float getIntensity(row, col){ return getValue(row,col).intensity; }
+
+	float getIntensity(int row, int col){ return getValue(row,col).intensity; }
+	float getStdDev(int row, int col){ return getValue(row,col).intensity; }
+	float getPixels(int row, int col){ return getValue(row,col).pixels; }
 	
 };
 
 class CEL4 {
-	void* rawData; // this is the raw data that we were passed when constructed
+	char* rawData; // this is the raw data that we were passed when constructed
 	TopHeader header; // top header
 	CELString cel3Header;
 	CELString algorithm;
@@ -107,7 +120,7 @@ class CEL4 {
 	CellEntries cells; // the cells in the data
 
 public:
-	CEL4(void* where):
+	CEL4(char* where):
 		rawData(where),
 		header(rawData),
 		cel3Header( header.getJump() ),
@@ -115,6 +128,5 @@ public:
 		algorithmParams( algorithm.getJump() ),
 		header2( algorithmParams.getJump() ),
 		cells( header.getNumRows(), header.getNumCols(), header2.getJump())
-	{}	 
+	{}	
 };
-

@@ -1,0 +1,766 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"service",
+				"serviceType"
+			],
+			[
+				"ServiceAc",
+				"ServiceActorSummary"
+			],
+			[
+				"Servce",
+				"ServiceActor"
+			],
+			[
+				"shu",
+				"shouldAppend"
+			],
+			[
+				"write",
+				"writePasMinute"
+			],
+			[
+				"Event",
+				"EventInfo"
+			],
+			[
+				"log",
+				"logLocation"
+			],
+			[
+				"count",
+				"countableMap"
+			],
+			[
+				"get",
+				"getMemUsage"
+			],
+			[
+				"calc",
+				"calcMemUsageRatio"
+			],
+			[
+				"CPU",
+				"CPUInfo"
+			],
+			[
+				"number",
+				"number-of-cores"
+			],
+			[
+				"dec",
+				"decodedToken"
+			],
+			[
+				"de",
+				"decodedToken"
+			],
+			[
+				"decdo",
+				"decodeBase64"
+			],
+			[
+				"Complai",
+				"ComplianceUpdateRequest"
+			],
+			[
+				"Compliance",
+				"ComplianceManagerActor"
+			],
+			[
+				"Compli",
+				"ComplianceServiceRequest"
+			],
+			[
+				"Actor",
+				"ActorRef"
+			],
+			[
+				"USer",
+				"UserRequest"
+			],
+			[
+				"Liste",
+				"ListenerRegister"
+			],
+			[
+				"leng",
+				"lengthCompare"
+			],
+			[
+				"Sta",
+				"StatsServiceRequest"
+			],
+			[
+				"num",
+				"numEvents"
+			],
+			[
+				"logIn",
+				"logIndividualEvents"
+			],
+			[
+				"type",
+				"typeAction"
+			],
+			[
+				"eventMap",
+				"recentEventMap"
+			],
+			[
+				"flus",
+				"flushFrequency"
+			],
+			[
+				"user",
+				"userSecret"
+			],
+			[
+				"recev",
+				"received"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "readFile.cpp",
+			"settings":
+			{
+				"buffer_size": 912,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "CelStructure.h",
+			"settings":
+			{
+				"buffer_size": 3067,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": ".gitignore",
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Preferences: Browse Packages"
+			],
+			[
+				"comm",
+				"Toggle Comment"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 139.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/jess/projects/gtBio"
+	],
+	"file_history":
+	[
+		"/home/jess/projects/ticrypt-scala/ticrypt-stats/src/main/scala/ticrypt/stats/StatsManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/ServiceProvider.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-file-manager/src/main/scala/ticrypt/filemanager/FileServerManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/Services.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Services.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/UsageMonitor.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/resources/reference.conf",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/resources/reference.conf",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/Sessions.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/SessionService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/ServiceManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/Router.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/HostManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/VM.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/HostActor.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/models/VMInfo.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/DomainActor.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/models/VMHost.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/ConfigManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/models/Brick.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-vm/src/main/scala/ticrypt/vm/VMServerManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stats/src/main/scala/ticrypt/stats/Boot.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stats/src/main/resources/reference.conf",
+		"/home/jess/projects/ticrypt-scala/init.py",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stats/src/main/scala/ticrypt/stats/StatsWriter.scala",
+		"/home/jess/projects/ticrypt-scala/.gitignore",
+		"/home/jess/projects/ticrypt-scala/minuteLog.csv",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/models/Stats.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/ws/StatsWsWorker.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/Groups.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/logging/StorageLog.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/models/SignedMessage.scala",
+		"/home/jess/projects/ticrypt-scala/scripts/clean_testers.py",
+		"/home/jess/projects/ticrypt-scala/ticrypt-logger/src/main/scala/ticrypt/logger/LoggingServerManager.scala",
+		"/home/jess/projects/quick.py",
+		"/home/jess/projects/quick.",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/package.scala",
+		"/home/jess/projects/ticrypt-scala/project/Build.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/FileReadHandler.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/RootService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/ExceptionHandlers.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-storage/src/main/scala/ticrypt/storage/StorageServerManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/ServerManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/Users.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/RemoteProxy.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/DirectoryService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/exceptions/Compliance.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/ComplianceService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-compliance/src/main/scala/ComplianceManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/exceptions/Security.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/RSA.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/SignedMessage.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/json/Sessions.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/exceptions/SignedMessages.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/Send.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/BaseService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/reactive/websocket/WebSocketServer.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/reactive/websocket/WebSocket.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/reactive/api/RootService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/models/Session.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/Boot.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-compliance/src/main/scala/DB.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Compliance.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/UserService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/models/Compliance.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-compliance/src/main/scala/ComplianceWorkerActor.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-file-manager/src/main/scala/ticrypt/filemanager/FileWorkerActor.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-file-manager/src/main/scala/ticrypt/filemanager/DB.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/json/Compliance.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Files.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Users.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/models/User.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/json/Users.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/RootHttpService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/FileService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-file-manager/src/main/resources/reference.conf",
+		"/home/jess/projects/ticrypt-scala/ticrypt-file-manager/src/main/scala/ticrypt/filemanager/FileServiceRouter.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/exceptions/Directories.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-compliance/src/main/scala/Boot.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-compliance/src/main/resources/reference.conf",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Directories.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Storage.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Sessions.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Stats.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stresstest/src/main/scala/ticrypt/stresstest/Admin.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stresstest/src/main/scala/ticrypt/stresstest/User.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/FileWriteFormDataHandler.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/http/FileWriteArrayHandler.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stresstest/src/main/scala/ticrypt/stresstest/UserBase.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/DB.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/stats/StatsDistributor.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/UserService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-storage/src/main/scala/ticrypt/storage/StorageWorker.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/messages/Groups.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-statistics/src/main/scala/ticrypt/statistics/Boot.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-statistics/src/main/resources/reference.conf",
+		"/home/jess/projects/ticrypt-scala/ticrypt-statistics/src/main/scala/ticrypt/statistics/StatsManager.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-file-manager/src/main/scala/ticrypt/filemanager/Boot.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-statistics/src/main/resources/scala/Boot.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/models/Directory.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-core/src/main/scala/ticrypt/core/models/FileInfo.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stresstest/src/main/resources/reference.conf",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stresstest/src/main/scala/ticrypt/stresstest/Messages.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth/src/main/scala/ticrypt/auth/Messages.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-file-manager.log",
+		"/home/jess/projects/ticrypt-scala/ticrypt-auth.log",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/FileWriteFormDataHandler.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stresstest/src/main/scala/ticrypt/stresstest/Boot.scala",
+		"/home/jess/.config/sublime-text-3/Packages/User/Default (Linux).sublime-keymap",
+		"/home/jess/.config/sublime-text-3/Packages/Default/Default (Linux).sublime-keymap",
+		"/home/jess/projects/ticrypt-scala/ticrypt-rest/src/main/scala/ticrypt/rest/SessionService.scala",
+		"/home/jess/projects/ticrypt-scala/ticrypt-stresstest/src/main/scala/ticrypt/stresstest/Exceptions.scala",
+		"/home/jess/projects/ticrypt-scala/stresstest.sh",
+		"/home/jess/projects/ticrypt-scala/project/target/resolution-cache/reports/default-ticrypt-scala-build-plugin.xml",
+		"/home/jess/projects/ticrypt-scala/README.md"
+	],
+	"find":
+	{
+		"height": 25.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"name",
+			"router",
+			"services",
+			"sent",
+			"def get",
+			"get",
+			"StatusPong",
+			"log.error(\"A",
+			"log.error",
+			"AHH",
+			"AHHH",
+			"freq",
+			"confLoc",
+			"scheduleOnce",
+			"SendPing",
+			"receive",
+			"FiniteDuration",
+			"CheckStatus",
+			"idleTime",
+			"scheduleOnce",
+			"schedule",
+			"confLoc + ",
+			"\".",
+			".getDuration",
+			"config",
+			"duration",
+			"proxy",
+			"getTime",
+			"connect()",
+			"Host",
+			"getBrick",
+			"createVM",
+			"getnexthost",
+			"bricks",
+			"BrickInfo",
+			"hostUsage",
+			"pinger",
+			"ListenerRegister(self)",
+			"datetime.now",
+			"datetime",
+			"timestamp",
+			"map",
+			"statsmap",
+			"\n        case (service, map) ⇒",
+			"stopping",
+			"pinger",
+			"statsDistributorActor",
+			"statsws",
+			"stats",
+			"uMonitor",
+			"memusage",
+			"rss",
+			"int",
+			"Countable",
+			"Auth {\n			jiffies-per-second = 100\n			number-of-cores = 4\n		}\n		File-Manager {\n			jiffies-per-second = 100\n			number-of-cores = 4\n		}\n		Stats {\n			jiffies-per-second = 100\n			number-of-cores = 4\n		}\n		Storage {\n			jiffies-per-second = 100\n			number-of-cores = 4\n		}\n		REST {\n			jiffies-per-second = 100\n			number-of-cores = 4\n		}\n	}",
+			"uMonitor",
+			"val uMonitor = context.actorOf(UsageMonitor.props(config, proxy, \"Storage\"))",
+			"Compliance",
+			"! Countable",
+			"JsonWriter",
+			"generateKeypair",
+			"decr",
+			"getpublic",
+			"TODO",
+			"createID",
+			"TODO",
+			"SessionsManager",
+			"No such session",
+			"Char",
+			"idleTime",
+			"random",
+			"nextBytes",
+			"random",
+			"config",
+			"Base",
+			"sessIdBytes",
+			"createSession",
+			"Session(",
+			"Session",
+			"chalIdBytes",
+			"secretBytes",
+			"random",
+			"Config",
+			"NewFileInfo",
+			"jsobject",
+			"findOne",
+			"user",
+			"userexcep",
+			"userRoute",
+			"FromConfig",
+			"router",
+			"nr-of-instances",
+			"n-of-instances",
+			"running",
+			"find",
+			"MMap",
+			"Map",
+			"LastError",
+			"ticrypt.core.exceptions.directories",
+			"config",
+			"DB",
+			"}",
+			"2558",
+			"27018",
+			"ServiceType",
+			"*",
+			"complete",
+			"proxy: ",
+			"proxy",
+			"ReadPart",
+			"proxy",
+			"ctx",
+			"size",
+			"statistic",
+			"stats",
+			"statistic",
+			"complete",
+			"db",
+			"proxy",
+			"storage",
+			"Register",
+			"stopping",
+			"router",
+			"val proxy = context.actorOf",
+			"remote-proxy",
+			"proxy",
+			"execution",
+			"self"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"\"",
+			"_",
+			"Listener",
+			"bytesMoved",
+			""
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "readFile.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 912,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								436,
+								436
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 99.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "CelStructure.h",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 3067,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								764,
+								764
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": -0.0,
+						"translation.y": 1173.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": ".gitignore",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 25.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "gtBio.sublime-project",
+	"replace":
+	{
+		"height": 46.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"serviceprovider",
+				"ticrypt-core/src/main/scala/ticrypt/core/ServiceProvider.scala"
+			],
+			[
+				"stats",
+				"ticrypt-stats/src/main/scala/ticrypt/stats/StatsManager.scala"
+			],
+			[
+				"services.scala",
+				"ticrypt-core/src/main/scala/ticrypt/core/messages/Services.scala"
+			],
+			[
+				"services",
+				"ticrypt-auth/src/main/scala/ticrypt/auth/Services.scala"
+			],
+			[
+				"serv",
+				"ticrypt-auth/src/main/scala/ticrypt/auth/Services.scala"
+			],
+			[
+				"sessions",
+				"ticrypt-rest/src/main/scala/ticrypt/rest/http/SessionService.scala"
+			],
+			[
+				"hostmanager",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/HostManager.scala"
+			],
+			[
+				"hostactor",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/HostActor.scala"
+			],
+			[
+				"vminfos",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/models/VMInfo.scala"
+			],
+			[
+				"domaina",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/DomainActor.scala"
+			],
+			[
+				"vmhost",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/models/VMHost.scala"
+			],
+			[
+				"host.scala",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/models/VMHost.scala"
+			],
+			[
+				"brick",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/models/Brick.scala"
+			],
+			[
+				"configmanager",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/ConfigManager.scala"
+			],
+			[
+				"brick.sacla",
+				"ticrypt-vm/src/main/scala/ticrypt/vm/models/Brick.scala"
+			],
+			[
+				"minutelog",
+				"minuteLog.csv"
+			],
+			[
+				"minte",
+				"minuteLog.csv"
+			],
+			[
+				"minute",
+				"minuteLog.csv"
+			],
+			[
+				"py",
+				"scripts/clean_testers.py"
+			],
+			[
+				"build.sca",
+				"project/Build.scala"
+			],
+			[
+				"user.scala",
+				"ticrypt-stresstest/src/main/scala/ticrypt/stresstest/User.scala"
+			],
+			[
+				"message",
+				"ticrypt-stresstest/src/main/scala/ticrypt/stresstest/Messages.scala"
+			],
+			[
+				"admin.scala",
+				"ticrypt-stresstest/src/main/scala/ticrypt/stresstest/Admin.scala"
+			],
+			[
+				"userbase",
+				"ticrypt-stresstest/src/main/scala/ticrypt/stresstest/UserBase.scala"
+			],
+			[
+				"sessionser",
+				"ticrypt-rest/src/main/scala/ticrypt/rest/SessionService.scala"
+			],
+			[
+				"rsa",
+				"ticrypt-core/src/main/scala/ticrypt/core/RSA.scala"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 259.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
