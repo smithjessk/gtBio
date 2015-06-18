@@ -1,6 +1,6 @@
 CC=clang++
 CFLAGS=-std=c++11 -g
-DEPS=CelStructure.h
+DEPS=src/CelStructure.h
 
 default:
-	$(CC) $(CFLAGS) -o readFile readFile.cpp -I.
+	$(CC) $(CFLAGS) -o bin/readFile src/readFile.cpp -I.
