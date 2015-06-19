@@ -6,10 +6,9 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <cinttypes>
-#include "CelStructure.h"
 
-#define NUMINTS  (1)
-#define FILESIZE (NUMINTS * sizeof(int32_t))
+#include "CELStructureV4.h"
+#include "CELStructureCC.h"
 
 int main(int argc, char *argv[]) {
     char *map;
@@ -27,11 +26,11 @@ int main(int argc, char *argv[]) {
        perror("Error mmapping the file");
        exit(EXIT_FAILURE);
     }
-    
-    CEL4 in(map);
 
+    // CEL4 in(map);
+    CELCommandConsole in(map);
 
-    if (munmap(map, FILESIZE) == -1) {
+    if (munmap(map, size) == -1) {
         perror("Error un-mmapping the file");
     }
     
