@@ -45,24 +45,33 @@ public:
 class GenericDataHeaders {
     struct GenericDataHeader {
         CELCCString dataTypeIdentifier;
-        // CELCCString uniqueIdentifier; // A GUID
-        // WString created;
+        CELCCString uniqueIdentifier; // A GUID
+        WString creationTime; // A datetime
+        Locale creationOS;
+
+        GenericDataHeader(char* where):
+        dataTypeIdentifier(where),
+        uniqueIdentifier(dataTypeIdentifier.getJump()),
+        creationTime(uniqueIdentifier.getJump()),
+        creationOS(creationTime.getJump())
+        {}
     };
 
-    GenericDataHeader* data;
+    // When it was GenericDataHeader* data, a pointer, the underlying constructor
+    // for CELCCString was not called, so the values were neither initialized nor read properly.
+    // This solution shouldn't be too bad, however, as each GenericDataHeader
+    // has minimum overhead and is a nice container. 
+    // TODO: Ask Alin about overhead, expansion to include many GenericDataHeader's
+    GenericDataHeader data;
 
 public:
     GenericDataHeaders(char* where):
-    data((GenericDataHeader*) where) {
-        cout << "What the size is: " << data->dataTypeIdentifier.size << endl;            
+    data(where) {
+        cout << "Data type identifier: " << data.dataTypeIdentifier.str << endl;
+        cout << "Unique identifier: " << data.uniqueIdentifier.str << endl;
+        /*cout << "Creation Time: " << data.creationTime.str << endl; // TODO: Why is this zero? Is this okay?
+        cout << "Creation OS: " << data.creationOS.str << endl;*/
     }
-    /*
-    data() {
-        // data->dataTypeIdentifier.size = fromBEtoSigned((uint8_t*)where);
-        cout << "What it should be: " << fromBEtoSigned((uint8_t*)where) << endl;
-        int32_t size = (data->dataTypeIdentifier.size);
-        cout << "Size of data type ident: " << size << endl;
-    }*/
 };
 
 class CELCommandConsole {
