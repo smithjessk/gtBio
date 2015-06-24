@@ -48,12 +48,14 @@ class GenericDataHeaders {
         CELCCString uniqueIdentifier; // A GUID
         WString creationTime; // A datetime
         Locale creationOS;
+        int32_t numParams; // Name/type/value
 
         GenericDataHeader(char* where):
         dataTypeIdentifier(where),
         uniqueIdentifier(dataTypeIdentifier.getJump()),
         creationTime(uniqueIdentifier.getJump()),
-        creationOS(creationTime.getJump())
+        creationOS(creationTime.getJump()),
+        numParams(fromBEtoSigned((uint8_t*)creationOS.getJump()))
         {}
     };
 
@@ -66,11 +68,18 @@ class GenericDataHeaders {
 
 public:
     GenericDataHeaders(char* where):
+    // creationTime.size is on line 7, second half of second set-of-2 bytes
+    // creationTime.getJump() lands you 3 bytes later (two for size, )
+    // Strings are not null terminated
     data(where) {
         cout << "Data type identifier: " << data.dataTypeIdentifier.str << endl;
         cout << "Unique identifier: " << data.uniqueIdentifier.str << endl;
-        /*cout << "Creation Time: " << data.creationTime.str << endl; // TODO: Why is this zero? Is this okay?
-        cout << "Creation OS: " << data.creationOS.str << endl;*/
+        cout << "Creation time: " << data.creationTime.str << endl; // DEPRECATED SOON
+        //cout << "Creation OS: " << data.creationOS.getISO3166() << endl;
+        // cout << "size: " << sizeof(int32_t) << endl;
+        //cout << "diff: " << data.creationTime.getJump() - data.uniqueIdentifier.getJump() << endl;
+        // cout << "diff: " << (data.creationOS.getJump() - data.creationTime.getJump()) << endl;
+        // cout << "Number of parameters: " << data.numParams << endl;
     }
 };
 
@@ -84,5 +93,7 @@ public:
     rawData(where),
     fileHeader(rawData),
     gdHeaders(fileHeader.getJump())
-    {}
+    {
+        // cout << "To beginning of gdHeaders: " << (fileHeader.getJump() - where) << endl;
+    }
 };
