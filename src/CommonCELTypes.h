@@ -68,24 +68,18 @@ struct WString {
 
 // Two character code using ISO
 struct Locale {
-    /*char* ISO369;
-    char* ISO3166;*/
-    int16_t* ISO369;
-    int16_t* ISO3166;
+    char* where;
 
     // TODO: Why is this not printing? 
+    // TODO: FIX THIS
     Locale(char* where) {
-        cout << sizeof(int16_t) << endl;
-        printf("Starting at %p\n", where);
-        ISO369 = (int16_t*) where;
-        printf("Starting at %ld\n", (char*)ISO369 - where);
-        ISO3166 = (int16_t*)(where + sizeof(int16_t));
-        printf("Starting at %d\n", *ISO3166);
+        where = where;
     }
 
-    char getISO369() { return *(ISO369);  }
-    char getISO3166() { return *(ISO3166); }
-    char *getJump() { return (char*)ISO369 + 4; }
+    // TODO: Are these two-byte characters or one-byte characters?
+    // char getISO369() { return *(ISO369);  }
+    // char getISO3166() { return *(ISO3166); }
+    char *getJump() { return where + (4 * sizeof(char)); }
 };
 
 #endif

@@ -14,6 +14,12 @@ void seeBytes(int8_t input) {
     return;
 }
 
+void seeBytes(char* input) {
+    seeBytes((int8_t)(*input));
+    // cout << *(input) << endl;
+    return;
+}
+
 class FileHeader {
     struct FileHeaderData {
         uint8_t magic; // Should be 59
@@ -72,13 +78,25 @@ public:
     // creationTime.getJump() lands you 3 bytes later (two for size, )
     // Strings are not null terminated
     data(where) {
+        printf("Unique identifier starts at %p\n", data.dataTypeIdentifier.getJump());
+        printf("Creation time starts at %p\n", data.uniqueIdentifier.getJump());
+        printf("Creation OS starts at %p\n", data.creationTime.getJump());
+        printf("Num params starts at %p\n", data.creationOS.getJump());
+
+        /*seeBytes(where + 4);
+        seeBytes(data.creationTime.getJump());
+        seeBytes(data.creationTime.getJump() + 1);
+        seeBytes(data.creationTime.getJump() + 2);
+        seeBytes(data.creationTime.getJump() - 60);*/
+
         cout << "Data type identifier: " << data.dataTypeIdentifier.str << endl;
         cout << "Unique identifier: " << data.uniqueIdentifier.str << endl;
-        cout << "Creation time: " << data.creationTime.str << endl; // DEPRECATED SOON
+        cout << "Number of name/value/type parameters: " << data.numParams << endl;
+
+        // @deprecated
+        // Note that the creation time is size 0
+        // cout << "Creation time: " << data.creationTime.str << endl; // DEPRECATED SOON
         //cout << "Creation OS: " << data.creationOS.getISO3166() << endl;
-        // cout << "size: " << sizeof(int32_t) << endl;
-        //cout << "diff: " << data.creationTime.getJump() - data.uniqueIdentifier.getJump() << endl;
-        // cout << "diff: " << (data.creationOS.getJump() - data.creationTime.getJump()) << endl;
         // cout << "Number of parameters: " << data.numParams << endl;
     }
 };
