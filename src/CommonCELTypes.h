@@ -52,16 +52,13 @@ struct CELCCString {
 
 // Unicode String 
 // TODO: getString method that goes from char to wchar_t
-struct WString {
+class WString {
     int32_t size;
-    char* str;
+    wchar_t* str;
 
     WString(char* where) {
-        cout << "Creating WString" << endl;
-        // cout << "Now printing where: " << (void*)where << endl;
         size = fromBEtoSigned((uint8_t*)where);
-        str = (char*) where + sizeof(int32_t);
-        // cout << "Now printing str: " << str << endl;
+        str = (wchar_t*)((char*) where + (4 * sizeof(uint8_t)));
     }
 
     char* getJump() { return (char*)str + size; }

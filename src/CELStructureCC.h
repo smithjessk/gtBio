@@ -109,14 +109,13 @@ public:
     }
 };
 
+// TODO: Add name reader
+// TODO: Add data group vector (find number of data groups ahead of time)
 class DataGroup {
     struct DataGroupData {
         uint8_t nextPosition[4]; // Unsigned
         uint8_t firstDataSetPosition[4]; // Unsigned
         uint8_t numDataSets[4]; // Signed
-        // WString name; 
-        uint8_t wStringSize[4];
-        char* str; // unicode string
     };
 
     DataGroupData* data;
@@ -148,13 +147,15 @@ class CELCommandConsole {
     FileHeader fileHeader;
     // GenericDataHeaders gdHeaders;
     DataGroup dataGroup; // Should be an array of DataGroup objects
+    WString groupName;
 
 public:
     CELCommandConsole(char* where):
     rawData(where),
     fileHeader(rawData),
     // gdHeaders(fileHeader.getJump())
-    dataGroup(fileHeader.getDataGroupJump())
+    dataGroup(fileHeader.getDataGroupJump()),
+
     {
         cout << "Next Location: " << dataGroup.getNextPosition() << endl;
         cout << "First DS: " << dataGroup.getFirstDSPosition() << endl;
