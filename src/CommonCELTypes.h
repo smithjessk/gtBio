@@ -57,6 +57,7 @@ struct WString {
     char* str;
 
     WString(char* where) {
+        cout << "Creating WString" << endl;
         // cout << "Now printing where: " << (void*)where << endl;
         size = fromBEtoSigned((uint8_t*)where);
         str = (char*) where + sizeof(int32_t);

@@ -109,18 +109,56 @@ public:
     }
 };
 
+class DataGroup {
+    struct DataGroupData {
+        uint8_t nextPosition[4]; // Unsigned
+        uint8_t firstDataSetPosition[4]; // Unsigned
+        uint8_t numDataSets[4]; // Signed
+        // WString name; 
+        uint8_t wStringSize[4];
+        char* str; // unicode string
+    };
+
+    DataGroupData* data;
+
+public:
+    DataGroup(char* where):
+    data((DataGroupData*) where) 
+    {}    
+    
+    uint32_t getNextPosition() {
+        return fromBEtoUnsigned((uint8_t*) data->nextPosition);
+    }
+
+    uint32_t getFirstDSPosition() {
+        return fromBEtoUnsigned((uint8_t*) data->firstDataSetPosition);
+    }
+
+    int32_t getNumDataSets() {
+        return fromBEtoSigned((uint8_t*) data->numDataSets);
+    }
+
+    int32_t getStringSize() {
+        return fromBEtoSigned((uint8_t*) data->wStringSize);
+    }
+};
+
 class CELCommandConsole {
     char* rawData;
     FileHeader fileHeader;
     // GenericDataHeaders gdHeaders;
+    DataGroup dataGroup; // Should be an array of DataGroup objects
 
 public:
     CELCommandConsole(char* where):
     rawData(where),
-    fileHeader(rawData)
+    fileHeader(rawData),
     // gdHeaders(fileHeader.getJump())
+    dataGroup(fileHeader.getDataGroupJump())
     {
-        uint32_t nextPosit = fromBEtoUnsigned((uint8_t*)fileHeader.getDataGroupJump());
-        cout << "Next Location: " << nextPosit << endl;
+        cout << "Next Location: " << dataGroup.getNextPosition() << endl;
+        cout << "First DS: " << dataGroup.getFirstDSPosition() << endl;
+        cout << "Number of data sets: " << dataGroup.getNumDataSets() << endl;
+        cout << "String size: " << dataGroup.getStringSize() << endl;
     }
 };
