@@ -18,8 +18,8 @@ int main(int argc, char *argv[]) {
         perror("Error opening file for reading");
         exit(EXIT_FAILURE);
     }
+    
     off_t size = lseek(fd, 0, SEEK_HOLE);
-
     map = (char *) mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
     if (map == MAP_FAILED) {
        close(fd);

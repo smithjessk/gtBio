@@ -43,8 +43,16 @@ public:
         return (char*) data + sizeof(FileHeaderData); 
     }
 
+    uint32_t getFirstPosition() {
+        return fromBEtoUnsigned(data->firstPosition);
+    }
+
+    char* getDataGroupJump(){ 
+        return (char*) data + getFirstPosition();
+    }
+
     int32_t getNumGroups(){ return fromBEtoSigned(data->numGroups); }
-    uint32_t getFirstPosition(){ return fromBEtoUnsigned(data->firstPosition) ;}
+    
     uint8_t getVersion(){ return data->version; }
 };
 
@@ -104,14 +112,15 @@ public:
 class CELCommandConsole {
     char* rawData;
     FileHeader fileHeader;
-    GenericDataHeaders gdHeaders;
+    // GenericDataHeaders gdHeaders;
 
 public:
     CELCommandConsole(char* where):
     rawData(where),
-    fileHeader(rawData),
-    gdHeaders(fileHeader.getJump())
+    fileHeader(rawData)
+    // gdHeaders(fileHeader.getJump())
     {
-        // cout << "To beginning of gdHeaders: " << (fileHeader.getJump() - where) << endl;
+        uint32_t nextPosit = fromBEtoUnsigned((uint8_t*)fileHeader.getDataGroupJump());
+        cout << "Next Location: " << nextPosit << endl;
     }
 };
