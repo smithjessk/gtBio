@@ -4,6 +4,7 @@
 
 #include <cinttypes>
 #include <stdio.h>
+#include <vector>
 
 #include "CommonCELTypes.h"
 
@@ -56,6 +57,7 @@ public:
     uint8_t getVersion(){ return data->version; }
 };
 
+/*
 class GenericDataHeaders {
     struct GenericDataHeader {
         CELCCString dataTypeIdentifier;
@@ -73,41 +75,16 @@ class GenericDataHeaders {
         {}
     };
 
-    // When it was GenericDataHeader* data, a pointer, the underlying constructor
-    // for CELCCString was not called, so the values were neither initialized nor read properly.
-    // This solution shouldn't be too bad, however, as each GenericDataHeader
-    // has minimum overhead and is a nice container. 
-    // TODO: Ask Alin about overhead, expansion to include many GenericDataHeader's
     GenericDataHeader data;
 
 public:
     GenericDataHeaders(char* where):
-    // creationTime.size is on line 7, second half of second set-of-2 bytes
-    // creationTime.getJump() lands you 3 bytes later (two for size, )
-    // Strings are not null terminated
     data(where) {
-        printf("Unique identifier starts at %p\n", data.dataTypeIdentifier.getJump());
-        printf("Creation time starts at %p\n", data.uniqueIdentifier.getJump());
-        printf("Creation OS starts at %p\n", data.creationTime.getJump());
-        printf("Num params starts at %p\n", data.creationOS.getJump());
-
-        /*seeBytes(where + 4);
-        seeBytes(data.creationTime.getJump());
-        seeBytes(data.creationTime.getJump() + 1);
-        seeBytes(data.creationTime.getJump() + 2);
-        seeBytes(data.creationTime.getJump() - 60);*/
-
         cout << "Data type identifier: " << data.dataTypeIdentifier.str << endl;
         cout << "Unique identifier: " << data.uniqueIdentifier.str << endl;
         cout << "Number of name/value/type parameters: " << data.numParams << endl;
-
-        // @deprecated
-        // Note that the creation time is size 0
-        // cout << "Creation time: " << data.creationTime.str << endl; // DEPRECATED SOON
-        //cout << "Creation OS: " << data.creationOS.getISO3166() << endl;
-        // cout << "Number of parameters: " << data.numParams << endl;
     }
-};
+};*/
 
 // TODO: Add name reader
 // TODO: Add data group vector (find number of data groups ahead of time)
@@ -136,9 +113,18 @@ public:
     int32_t getNumDataSets() {
         return fromBEtoSigned((uint8_t*) data->numDataSets);
     }
+};
 
-    int32_t getStringSize() {
-        return fromBEtoSigned((uint8_t*) data->wStringSize);
+class DataGroups {
+    vector<DataGroup> groups;
+
+public:
+    DataGroups(char* where) {
+        groups.push_back(DataGroup(where));
+    }
+
+    DataGroup getGroup(int i) {
+        return groups.at(i);
     }
 };
 
@@ -146,20 +132,20 @@ class CELCommandConsole {
     char* rawData;
     FileHeader fileHeader;
     // GenericDataHeaders gdHeaders;
-    DataGroup dataGroup; // Should be an array of DataGroup objects
-    WString groupName;
+    // DataGroup dataGroup;
+    // WString groupName;
+    DataGroups dataGroups;
 
 public:
     CELCommandConsole(char* where):
     rawData(where),
     fileHeader(rawData),
     // gdHeaders(fileHeader.getJump())
-    dataGroup(fileHeader.getDataGroupJump()),
-
+    dataGroups(fileHeader.getDataGroupJump())
     {
+        DataGroup dataGroup = dataGroups.getGroup(0);
         cout << "Next Location: " << dataGroup.getNextPosition() << endl;
         cout << "First DS: " << dataGroup.getFirstDSPosition() << endl;
         cout << "Number of data sets: " << dataGroup.getNumDataSets() << endl;
-        cout << "String size: " << dataGroup.getStringSize() << endl;
     }
 };
