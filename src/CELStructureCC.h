@@ -5,6 +5,7 @@
 #include <cinttypes>
 #include <stdio.h>
 #include <vector>
+#include <assert.h>
 
 #include "CommonCELTypes.h"
 
@@ -17,7 +18,6 @@ void seeBytes(int8_t input) {
 
 void seeBytes(char* input) {
     seeBytes((int8_t)(*input));
-    // cout << *(input) << endl;
     return;
 }
 
@@ -37,7 +37,7 @@ public:
         cout << "Magic: " << unsigned(data->magic) << endl;
         cout << "Version: " << unsigned(data->version) << endl;
         cout << "Number of groups: " << getNumGroups() << endl;
-        cout << "Position of first group: " << getFirstPosition() << endl;
+        // cout << "Position of first group: " << getFirstPosition() << endl;
     }
 
     char* getJump() {
@@ -126,8 +126,173 @@ public:
     DataGroup getGroup(int i) {
         return groups.at(i);
     }
+
+    vector<uint32_t> getFirstDSPositions() {
+        vector<uint32_t> dsPositions (groups.size());
+        for (int i = 0; i < groups.size(); i++) {
+            dsPositions[i] = groups[i].getFirstDSPosition();
+        }
+        return dsPositions;
+    }
 };
 
+// TODO: TEST. This is slightly hairbrained.
+class NVTParam {
+    uint8_t* nameSize; // Signed
+    uint8_t* valueSize; // Signed
+    uint8_t* typeSize; // Signed
+
+public:
+    NVTParam(char* where):
+    nameSize((uint8_t*) where),
+    valueSize((uint8_t*) (where + 4 + 2 * (fromBEtoSigned(nameSize)))),
+    typeSize((uint8_t*) (valueSize + 4 + 2 *(fromBEtoSigned(valueSize))))
+    {}
+
+    char* getJump() {
+        return (char*) (typeSize + 4);
+    }
+};
+
+class NVTParams {
+    char* start;
+    vector<NVTParam> params;
+
+public:
+    NVTParams(char* where, uint8_t* numParams) {
+        start = where;
+        if (fromBEtoSigned(numParams) > 0) { 
+            params.push_back(NVTParam((char*) (numParams + 4)));
+        }
+        for (int i = 1; i < fromBEtoSigned(numParams); i++) {
+            params.push_back(NVTParam(params[i - 1].getJump()));
+        }
+    }
+
+    char* getJump() {
+        if (params.size() > 0) {
+            return params.back().getJump();
+        } else {
+            return start;
+        }
+    }
+};
+
+// WString, Byte, Int representing (Name, Type, and Size)
+class Column {
+    uint8_t* strSize; // Signed 32-bit int
+    uint8_t* value; // 1 byte value
+    uint8_t* valSize; // Signed 32-bit int
+
+public:
+    
+    Column(char* where):
+    strSize((uint8_t*) where),
+    value(strSize + 4 + 2 * fromBEtoSigned(strSize)),
+    valSize(value + 1) {
+        /*cout << "String size: " << fromBEtoSigned(strSize) << endl;
+        cout << "Value: " << unsigned(*value) << endl; // TODO: Enum?
+        cout << "Value size: " << fromBEtoSigned(valSize) << endl;*/
+    }
+
+    int32_t getValSize() {
+        return fromBEtoSigned(valSize);
+    }
+
+    char* getJump() {
+        return (char*) (valSize + 4);
+    }
+};
+
+class Columns {
+    vector<Column> cols;
+
+public:
+    Columns(char* where, uint32_t numCols) {
+        cout << "Num cols: " << numCols << endl;
+        cols.push_back(Column(where));
+        for (int i = 1; i < numCols; i++) {
+            cols.push_back(Column(cols[i - 1].getJump()));
+        }
+    }
+
+    int32_t getRowSize() {
+        int32_t size = 0;
+        for (int i = 0; i < cols.size(); i++) {
+            size += cols[i].getValSize();
+        }
+        return size;
+    }
+
+    char *getJump() {
+        return cols.back().getJump();
+    }
+};
+
+class DataSet {
+    // For now we are not going to keep a lot of the header information
+    struct DataSetHeader {
+        uint8_t firstElemPosition[4]; // Unsigned
+        uint8_t nextDataSetPosition[4]; // Unsigned
+        uint8_t nameSize[4]; // Signed
+    };
+
+    DataSetHeader* dsHeader;
+    uint8_t* numParams; // Signed 32-bit. Not in the struct because it's not next to nameSize
+    NVTParams params;
+    uint8_t* numCols; // Unsigned 32-bit
+    Columns cols;
+    uint8_t* numRows; // Unsigned 32-bit
+    char* dataStart;
+    // Rows rows;
+
+public:
+    DataSet(char* where):
+        dsHeader((DataSetHeader*) where),
+        numParams((uint8_t*) (where + 12 + (2 * fromBEtoSigned(dsHeader->nameSize)))),
+        params((char*) (numParams + 4), numParams),
+        numCols((uint8_t*) params.getJump()),
+        cols((char*) (numCols + 4), fromBEtoUnsigned(numCols)),
+        numRows((uint8_t*) cols.getJump()),
+        dataStart((char*) numRows + 4) {
+            cout << "Num rows: " << fromBEtoUnsigned(numRows) << endl;
+            // cout << "Row size in bytes: " << cols.getRowSize() << endl;
+            cout << "Printing first 10 float values: " << endl;
+            float *val = (float*) dataStart;
+            for (int i = 0; i < 10; i++) {
+                cout << *val << endl;
+                val = val + cols.getRowSize();
+            }
+            cout << "Last value: " << endl;
+            val = (float*) (dataStart + cols.getRowSize() * (fromBEtoUnsigned(numRows) - 1) );
+            // printf("ptr: %p\n", val);
+            cout << *val << endl;
+        }
+
+    char *getJump() {
+        // cout << (fromBEtoUnsigned(numRows) * cols.getRowSize()) << endl;
+        // printf("jump: %p\n", dataStart + (fromBEtoUnsigned(numRows) * cols.getRowSize()));
+        return dataStart + (fromBEtoUnsigned(numRows) * cols.getRowSize());
+    }
+};
+
+class DataSetsForGroup {
+    vector<DataSet> dSets;
+
+public:
+    DataSetsForGroup(char* where, int32_t numDataSets) {
+        // cout << "Number of data sets: " << numDataSets << endl;
+        // printf("Initial location: %p\n", where);
+        char* dsLocation = where;
+        for (int i = 0; i < 1; i++) {
+            dSets.push_back(DataSet(dsLocation));
+            dsLocation = dSets.back().getJump();
+            /*printf("dsLocation: %p\n", dSets.back().getJump());*/
+        }
+    }
+};
+
+// TODO: Add vector of DataSetsForGroup (as opposed to hard coding getGroup(0))
 class CELCommandConsole {
     char* rawData;
     FileHeader fileHeader;
@@ -135,17 +300,14 @@ class CELCommandConsole {
     // DataGroup dataGroup;
     // WString groupName;
     DataGroups dataGroups;
+    DataSetsForGroup dataSets;
 
 public:
     CELCommandConsole(char* where):
     rawData(where),
     fileHeader(rawData),
     // gdHeaders(fileHeader.getJump())
-    dataGroups(fileHeader.getDataGroupJump())
-    {
-        DataGroup dataGroup = dataGroups.getGroup(0);
-        cout << "Next Location: " << dataGroup.getNextPosition() << endl;
-        cout << "First DS: " << dataGroup.getFirstDSPosition() << endl;
-        cout << "Number of data sets: " << dataGroup.getNumDataSets() << endl;
-    }
+    dataGroups(fileHeader.getDataGroupJump()),
+    dataSets((where + dataGroups.getGroup(0).getFirstDSPosition()), dataGroups.getGroup(0).getNumDataSets())
+    {}
 };
