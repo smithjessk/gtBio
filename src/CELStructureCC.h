@@ -21,6 +21,12 @@ void seeBytes(char* input) {
     return;
 }
 
+void printUnicodeBytes(char* start, int size) {
+    for(int j = 0; j < size; j++)
+        printf("%02X ", start[j]);
+    cout << endl;
+}
+
 class FileHeader {
     struct FileHeaderData {
         uint8_t magic; // Should be 59
@@ -190,6 +196,7 @@ public:
     strSize((uint8_t*) where),
     value(strSize + 4 + 2 * fromBEtoSigned(strSize)),
     valSize(value + 1) {
+        // printUnicodeBytes((char*) (strSize) + 4, 2 * fromBEtoSigned(strSize));
         /*cout << "String size: " << fromBEtoSigned(strSize) << endl;
         cout << "Value: " << unsigned(*value) << endl; // TODO: Enum?
         cout << "Value size: " << fromBEtoSigned(valSize) << endl;*/
@@ -255,24 +262,30 @@ public:
         cols((char*) (numCols + 4), fromBEtoUnsigned(numCols)),
         numRows((uint8_t*) cols.getJump()),
         dataStart((char*) numRows + 4) {
+            // printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
             cout << "Num rows: " << fromBEtoUnsigned(numRows) << endl;
+            cout << "First elem position: " << fromBEtoUnsigned(dsHeader->firstElemPosition) << endl;
+            cout << "Next data set position: " << fromBEtoUnsigned(dsHeader->nextDataSetPosition) << endl;
             // cout << "Row size in bytes: " << cols.getRowSize() << endl;
-            cout << "Printing first 10 float values: " << endl;
-            float *val = (float*) dataStart;
+            /*cout << "Printing first 10 float values: " << endl;
+            char *val = dataStart;
             for (int i = 0; i < 10; i++) {
-                cout << *val << endl;
+                cout << *((float*) val) << endl;
                 val = val + cols.getRowSize();
-            }
-            cout << "Last value: " << endl;
-            val = (float*) (dataStart + cols.getRowSize() * (fromBEtoUnsigned(numRows) - 1) );
+            }*/
+            // cout << "Last value: " << endl;
+            // val = (dataStart + cols.getRowSize() * (fromBEtoUnsigned(numRows) - 1) );
             // printf("ptr: %p\n", val);
-            cout << *val << endl;
+            // cout << *((float*) val) << endl;
+            // char* next = val 
         }
 
     char *getJump() {
         // cout << (fromBEtoUnsigned(numRows) * cols.getRowSize()) << endl;
-        // printf("jump: %p\n", dataStart + (fromBEtoUnsigned(numRows) * cols.getRowSize()));
-        return dataStart + (fromBEtoUnsigned(numRows) * cols.getRowSize());
+        printf("jump: %p\n", dataStart + (fromBEtoUnsigned(numRows) * cols.getRowSize()));
+        printf("jump: %p\n", dataStart + fromBEtoUnsigned(dsHeader->nextDataSetPosition));
+        // return dataStart + (fromBEtoUnsigned(numRows) * cols.getRowSize());
+        return dataStart + fromBEtoUnsigned(dsHeader->nextDataSetPosition);
     }
 };
 
@@ -281,14 +294,15 @@ class DataSetsForGroup {
 
 public:
     DataSetsForGroup(char* where, int32_t numDataSets) {
-        // cout << "Number of data sets: " << numDataSets << endl;
+        cout << "Number of data sets: " << numDataSets << endl;
         // printf("Initial location: %p\n", where);
         char* dsLocation = where;
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < numDataSets; i++) {
             dSets.push_back(DataSet(dsLocation));
             dsLocation = dSets.back().getJump();
-            /*printf("dsLocation: %p\n", dSets.back().getJump());*/
+            // printf("dsLocation: %p\n", dSets.back().getJump());
         }
+        // cout << fromBEtoUnsigned((uint8_t*) dsLocation) << endl;
     }
 };
 

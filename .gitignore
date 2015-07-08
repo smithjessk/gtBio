@@ -1,2 +1,6 @@
+test
+print_unicode.py
+
+# Sublime
 *.sublime-project
 *.sublime-workspace
