@@ -106,10 +106,13 @@ class DataGroup {
 
 public:
     DataGroup(char* where):
-    data((DataGroupData*) where) 
-    {
-        printUnicodeBytes((char*) data->nameSize + 4, 2 * fromBEtoSigned(data->nameSize));
-    }    
+        data((DataGroupData*) where) 
+        {
+            /*cout << fromBEtoUnsigned(data->firstDataSetPosition) << endl;
+            printUnicodeBytes((char*) data->nameSize + 4, 2 * fromBEtoSigned(data->nameSize));
+            char* test = where + 16 + 2 * fromBEtoSigned(data->nameSize) ;
+            cout << fromBEtoSigned((uint8_t*) test) << endl;*/
+        }    
     
     uint32_t getNextPosition() {
         return fromBEtoUnsigned((uint8_t*) data->nextPosition);
@@ -257,7 +260,7 @@ class DataSet {
     // Rows rows;
 
 public:
-    DataSet(char* where):
+    DataSet(char* where, char* origWhere):
         dsHeader((DataSetHeader*) where),
         numParams((uint8_t*) (where + 12 + (2 * fromBEtoSigned(dsHeader->nameSize)))),
         params((char*) (numParams + 4), numParams),
@@ -265,7 +268,8 @@ public:
         cols((char*) (numCols + 4), fromBEtoUnsigned(numCols)),
         numRows((uint8_t*) cols.getJump()),
         dataStart((char*) (numRows + 4)) {
-            cout << fromBEtoUnsigned(dsHeader->nextDataSetPosition) << endl;
+
+            cout << "Next DS position: " << fromBEtoUnsigned(dsHeader->nextDataSetPosition) << endl;
             //printf("Starting pointer: %p\n", where);
 
             /*
@@ -273,26 +277,32 @@ public:
             // cout << "First elem position: " << firstPosit << endl;
             printf("Resulting pointer: %p\n", where + firstPosit);*/
 
-            char* other = (char*) (numRows+ 4);
+            cout << "Num cols: " << fromBEtoUnsigned(numCols) << endl;
+
+            char* other = (char*) (numRows + 4);
             printf("Other pointer: %p\n", other);
 
-            /*printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
+            //printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
             cout << "Num rows: " << fromBEtoUnsigned(numRows) << endl;
-            cout << "First elem position: " << fromBEtoUnsigned(dsHeader->firstElemPosition) << endl;*/
+            cout << "First elem position: " << fromBEtoUnsigned(dsHeader->firstElemPosition) << endl;
             //cout << "Next data set position: " << fromBEtoUnsigned(dsHeader->nextDataSetPosition) << endl;
             // cout << "Row size in bytes: " << cols.getRowSize() << endl;
             cout << "Printing first 10 float values: " << endl;
             char *val = dataStart;
             for (int i = 0; i < 10; i++) {
                 //printf("ptr: %p\n", val);
-                //cout << *((float*) val) << endl;
+                cout << *((float*) val) << endl;
                 val = val + cols.getRowSize();
             }
             // cout << "Last value: " << endl;
             val = (dataStart + cols.getRowSize() * (fromBEtoUnsigned(numRows) - 1) );
             printf("ptr: %p\n", val);
             // cout << *((float*) val) << endl;
-            char* expl = val + cols.getRowSize();
+            char* expl = origWhere + fromBEtoUnsigned(dsHeader->nextDataSetPosition);
+            cout << "Test: " << fromBEtoUnsigned((uint8_t*) expl) << endl;
+            cout << "Next DS position: " << fromBEtoUnsigned((uint8_t*) expl + 4) << endl;
+            cout << "Next string size: " << fromBEtoSigned((uint8_t*) expl + 8) << endl;
+            printUnicodeBytes(expl + 12, 2 * fromBEtoSigned((uint8_t*) expl + 8));
         }
 
     char *getJump() {
@@ -307,12 +317,12 @@ class DataSetsForGroup {
     vector<DataSet> dSets;
 
 public:
-    DataSetsForGroup(char* where, int32_t numDataSets) {
-        //cout << "Number of data sets: " << numDataSets << endl;
+    DataSetsForGroup(char* where, int32_t numDataSets, char* origWhere) {
+        cout << "Number of data sets: " << numDataSets << endl;
         // printf("Initial location: %p\n", where);
         char* dsLocation = where;
         for (int i = 0; i < numDataSets; i++) {
-            dSets.push_back(DataSet(dsLocation));
+            dSets.push_back(DataSet(dsLocation, origWhere));
             dsLocation = dSets.back().getJump();
             printf("dsLocation: %p\n", dSets.back().getJump());
         }
@@ -336,6 +346,6 @@ public:
     fileHeader(rawData),
     // gdHeaders(fileHeader.getJump())
     dataGroups(fileHeader.getDataGroupJump()),
-    dataSets((where + dataGroups.getGroup(0).getFirstDSPosition()), dataGroups.getGroup(0).getNumDataSets())
+    dataSets((where + dataGroups.getGroup(0).getFirstDSPosition()), dataGroups.getGroup(0).getNumDataSets(), where)
     {}
 };
