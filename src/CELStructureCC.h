@@ -202,7 +202,7 @@ public:
     strSize((uint8_t*) where),
     value(strSize + 4 + 2 * fromBEtoSigned(strSize)),
     valSize(value + 1) {
-        // printUnicodeBytes((char*) (strSize) + 4, 2 * fromBEtoSigned(strSize));
+        printUnicodeBytes((char*) (strSize) + 4, 2 * fromBEtoSigned(strSize));
         /*cout << "String size: " << fromBEtoSigned(strSize) << endl;
         cout << "Value: " << unsigned(*value) << endl; // TODO: Enum?
         cout << "Value size: " << fromBEtoSigned(valSize) << endl;*/
@@ -275,16 +275,16 @@ public:
             /*char* other = (char*) (numRows + 4);
             printf("Other pointer: %p\n", other);*/
 
-            printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
+            //printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
             cout << "Num rows: " << fromBEtoUnsigned(numRows) << endl;
             cout << "Row size in bytes: " << cols.getRowSize() << endl;
             cout << "Printing first 10 float values: " << endl;
-            /*char *val = dataStart;
+            char *val = dataStart;
             for (int i = 0; i < 10; i++) {
                 //printf("ptr: %p\n", val);
-                cout << *((float*) val) << endl;
+                cout << fromBEtoFloat(val) << endl;
                 val = val + cols.getRowSize();
-            }*/
+            }
             char* expl = origWhere + fromBEtoUnsigned(dsHeader->nextDataSetPosition);
             printf("ptr: %p\n", expl);
             printf("ptr: %p\n", fromBEtoUnsigned((uint8_t*) expl) + origWhere);

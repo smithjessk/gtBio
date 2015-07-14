@@ -14,6 +14,20 @@ uint32_t fromBEtoUnsigned(uint8_t* data) {
     return (data[3]<<0) | (data[2]<<8) | (data[1]<<16) | (data[0]<<24);
 }
 
+float fromBEtoFloat(char* data) {
+   float retVal;
+   char *floatToConvert = data;
+   char *returnFloat = ( char* ) & retVal;
+
+   // swap the bytes into a temporary buffer
+   returnFloat[0] = floatToConvert[3];
+   returnFloat[1] = floatToConvert[2];
+   returnFloat[2] = floatToConvert[1];
+   returnFloat[3] = floatToConvert[0];
+
+   return retVal;
+}
+
 void printFourBytes(uint8_t* data) {
     printf("Printing four bytes: %02x %02x %02x %02x\n", data[0], data[1], data[2], data[3]);
 }
