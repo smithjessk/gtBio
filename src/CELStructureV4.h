@@ -81,18 +81,27 @@ public:
     char* getJump(void){ 
         return (char*) cells + numRows*numCols* sizeof(CellEntry);
     }
-
     
-    CellEntry getValue(int row, int col){ 
-        assert(row < numRows && col < numCols);
-        return *((CellEntry*) cells + 10*(row*numCols + col));
+    char* getJumpToCellEntry(int row, int col) {
+        int rowJump = row * (10 * numCols);
+        int colJump = 10 * col;
+        return cells + rowJump + colJump;
     }
 
-    float getIntensity(int row, int col) { return getValue(row, col).intensity; }
+    float getIntensity(int row, int col) {
+        float *intensity = (float*) getJumpToCellEntry(row, col);
+        return *intensity;
+    }
 
-    /*
-    float getStdDev(int row, int col){ return getValue(row,col).stdDev; }
-    float getPixels(int row, int col){ return getValue(row,col).pixels; }*/
+    float getStdDev(int row, int col) {
+        float *stdDev = (float*) (getJumpToCellEntry(row, col) + 4);
+        return *stdDev;
+    }
+
+    int16_t getPixels(int row, int col) {
+        int16_t *pixels = (int16_t*) (getJumpToCellEntry(row, col) + 8);
+        return *pixels;
+    }
 };
 
 class CEL4 : public CELBase {
@@ -115,10 +124,7 @@ public:
     algorithmParams( algorithm.getJump() ),
     header2( algorithmParams.getJump() ),
     cells( header.getNumRows(), header.getNumCols(), header2.getJump())
-    {
-        cout << cells.getIntensity(0, 0) << endl;
-        cout << cells.getIntensity(0, 1) << endl;
-    }	
+    {}	
 
     int32_t getMagic() override {
         return header.getMagic();
