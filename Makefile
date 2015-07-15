@@ -3,18 +3,20 @@ CFLAGS=-std=c++11 -g -O2 -larmadillo
 DEPS=src/CelStructure.h
 
 GTEST_DIR=/home/jess/Downloads/gtest-1.7.0
-USER_DIR = src
+USER_DIR = test
 
 # Do not modify unless you know what you're doing
 GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
-CPPFLAGS += -isystem $(GTEST_DIR)/include
+CPPFLAGS += -lgtest -std=c++11
 CXXFLAGS += -g -Wall -Wextra -pthread
 
 # Add new tests as they are created
-TESTS = sample1_unittest
+TESTS = fileReaderUnitTest
 
 all : core $(TESTS)
+
+tests : $(TESTS)
 
 core:
 	$(CC) $(CFLAGS) -o bin/readFile src/readFile.cpp -I.
@@ -40,12 +42,10 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
 # Build sample test
-sample1.o : $(USER_DIR)/sample1.cc $(USER_DIR)/sample1.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1.cc
 
-sample1_unittest.o : $(USER_DIR)/sample1_unittest.cc \
-					$(USER_DIR)/sample1.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1_unittest.cc
+fileReaderUnitTest.o : $(USER_DIR)/fileReaderUnitTest.cpp \
+					 $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/fileReaderUnitTest.cpp
 
-sample1_unittest : sample1.o sample1_unittest.o gtest_main.a
+fileReaderUnitTest : fileReaderUnitTest.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

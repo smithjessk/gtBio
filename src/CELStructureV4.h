@@ -27,15 +27,16 @@ class TopHeader {
 public:
     TopHeader(char* where):
     data((TopHeaderData*) where) {
-        cout << "Magic: " << data->magic << endl;
+        /*&cout << "Magic: " << data->magic << endl;
         cout << "Version: " << data->version << endl;
         cout << "numCols: " << data->numCols << endl;
-        cout << "numRows: " << data->numRows << endl;
+        cout << "numRows: " << data->numRows << endl;*/
     }
 
     char* getJump(void){ return (char*)data + sizeof(TopHeaderData);}
     int32_t getNumRows(void){ return data->numRows; }
     int32_t getNumCols(void){ return data->numCols; }
+    int32_t getMagic() { return data->magic; }
 };
 
 class TopHeader2 {
@@ -51,10 +52,10 @@ class TopHeader2 {
 public:
     TopHeader2(char* where):
     data((TopHeader2Data*) where) {
-        cout << "Margin: " << data->margin << endl;
+        /*cout << "Margin: " << data->margin << endl;
         cout << "numOutliers: " << data->numOutliers << endl;
         cout << "numMaskedCells: " << data->numMaskedCells << endl;
-        cout << "numSubgrids: " << data->numSubgrids << endl;
+        cout << "numSubgrids: " << data->numSubgrids << endl;*/
     }
 
     char* getJump(void){ return (char*) data + sizeof(TopHeader2Data); }	
@@ -67,32 +68,34 @@ class CellEntries {
         int16_t pixels; // how many pixels
     };
 
-    int32_t numRows; 
+    int32_t numRows;
     int32_t numCols;
-    CellEntry* cells; // the pointer to cells
+    char* cells; // the pointer to cells
 
 public: 
     CellEntries(int32_t numRows, int32_t numCols, char* where):
     numRows(numRows), 
     numCols(numCols), 
-    cells((CellEntry*) where) {}
+    cells(where) {}
 
     char* getJump(void){ 
         return (char*) cells + numRows*numCols* sizeof(CellEntry);
     }
 
-    // maybe this should check
+    
     CellEntry getValue(int row, int col){ 
-        assert(row < numRows && col < numCols );
-        return cells[row*numCols + col]; 
+        assert(row < numRows && col < numCols);
+        return *((CellEntry*) cells + 10*(row*numCols + col));
     }
 
-    float getIntensity(int row, int col){ return getValue(row,col).intensity; }
-    float getStdDev(int row, int col){ return getValue(row,col).intensity; }
-    float getPixels(int row, int col){ return getValue(row,col).pixels; }
+    float getIntensity(int row, int col) { return getValue(row, col).intensity; }
+
+    /*
+    float getStdDev(int row, int col){ return getValue(row,col).stdDev; }
+    float getPixels(int row, int col){ return getValue(row,col).pixels; }*/
 };
 
-class CEL4 {
+class CEL4 : public CELBase {
     char* rawData;
     TopHeader header;
     CELV4String cel3Header;
@@ -102,6 +105,8 @@ class CEL4 {
     CellEntries cells;
 
 public:
+    using pointer = std::unique_ptr<CEL4>;
+
     CEL4(char* where):
     rawData(where),
     header(rawData),
@@ -110,5 +115,24 @@ public:
     algorithmParams( algorithm.getJump() ),
     header2( algorithmParams.getJump() ),
     cells( header.getNumRows(), header.getNumCols(), header2.getJump())
-    {}	
+    {
+        cout << cells.getIntensity(0, 0) << endl;
+        cout << cells.getIntensity(0, 1) << endl;
+    }	
+
+    int32_t getMagic() override {
+        return header.getMagic();
+    }
+
+    arma::fmat getIntensityMatrix() override {
+        int32_t numRows = header.getNumRows();
+        int32_t numCols = header.getNumCols();
+        arma::fmat ret(numRows, numCols);
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                ret(i, j) = cells.getIntensity(i, j);
+            }
+        }
+        return ret;
+    }
 };

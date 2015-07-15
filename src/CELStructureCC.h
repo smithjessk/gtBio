@@ -6,6 +6,7 @@
 #include <vector>
 #include <armadillo>
 #include <math.h>
+#include <memory>
 
 #include "CommonCELTypes.h"
 #include "CELBase.h"
@@ -200,7 +201,7 @@ public:
     strSize((uint8_t*) where),
     value(strSize + 4 + 2 * fromBEtoSigned(strSize)),
     valSize(value + 1) {
-        printUnicodeBytes((char*) (strSize) + 4, 2 * fromBEtoSigned(strSize));
+        //printUnicodeBytes((char*) (strSize) + 4, 2 * fromBEtoSigned(strSize));
         /*cout << "String size: " << fromBEtoSigned(strSize) << endl;
         cout << "Value: " << unsigned(*value) << endl; // TODO: Enum?
         cout << "Value size: " << fromBEtoSigned(valSize) << endl;*/
@@ -256,8 +257,8 @@ class DataSet {
     uint8_t* numCols; // Unsigned 32-bit
     Columns cols;
     uint8_t* numRows; // Unsigned 32-bit
+    double sqrtOfRows;
     char* dataStart;
-    // Rows rows;
 
 public:
     DataSet(char* where, char* origWhere):
@@ -268,6 +269,7 @@ public:
         numCols((uint8_t*) params.getJump()),
         cols((char*) (numCols + 4), fromBEtoUnsigned(numCols)),
         numRows((uint8_t*) cols.getJump()),
+        sqrtOfRows(sqrt(fromBEtoUnsigned(numRows))),
         dataStart((char*) (numRows + 4)) {
             //cout << "Num cols: " << fromBEtoUnsigned(numCols) << endl;
             //printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
@@ -296,6 +298,13 @@ public:
     uint32_t getNumRows() {
         return fromBEtoUnsigned(numRows);
     }
+
+    char* getElement(int row, int col) {
+        uint32_t blocksFromRows = sqrtOfRows * row;
+        return dataStart + cols.getRowSize() * (blocksFromRows + col);
+    }
+
+    char* getDataStart() { return dataStart; }
 };
 
 class DataSetsForGroup {
@@ -303,10 +312,9 @@ class DataSetsForGroup {
 
 public:
     DataSetsForGroup(char* where, int32_t numDataSets, char* origWhere) {
-        cout << "Number of data sets: " << numDataSets << endl;
         char* dsLocation = where;
-        for (int i = 0; i < numDataSets; i++) {
-            cout << endl;
+        // TODO: Correctly work with this for more data sets
+        for (int i = 0; i < numDataSets - 1; i++) {
             dSets.push_back(DataSet(dsLocation, origWhere));
             dsLocation = dSets.back().getJump();
         }
@@ -326,6 +334,8 @@ class CELCommandConsole : public CELBase {
     DataSetsForGroup dataSets;
 
 public:
+    using pointer = std::unique_ptr<CELCommandConsole>;
+
     CELCommandConsole(char* where):
     rawData(where),
     fileHeader(rawData),
@@ -335,12 +345,24 @@ public:
         dataGroups.getGroup(0).getNumDataSets(), where)
     {}
 
-    uint8_t getMagic() { return fileHeader.getMagic(); }
+    int32_t getMagic() { return fileHeader.getMagic(); }
 
     // TODO: Update this for multiple data groups
-    mat getIntensityMatrix() {
-        uint32_t numRows = dataSets.get(0).getNumRows();
-        mat ret(sqrt(numRows), sqrt(numRows));
-        return ret;
+    
+    /**
+     * Read the intensity values and transform them from little endian to big
+     * @return A square matrix in row-major order 
+     */
+    arma::fmat getIntensityMatrix() {
+      char* dStart = dataSets.get(0).getDataStart();
+
+      uint32_t sideLength = sqrt(dataSets.get(0).getNumRows());
+      fmat ret((float*) dStart, sideLength, sideLength); // Square matrix
+        
+      ret.transform([] (float &val) {
+        return fromBEtoFloat((char*) &val); // Big endian to little 
+      });
+
+      return ret.t(); // Column-major to row-major
     }
 };
