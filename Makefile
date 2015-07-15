@@ -1,5 +1,5 @@
 CC=clang++
-CFLAGS=-std=c++11 -g
+CFLAGS=-std=c++11 -g -O2 -larmadillo
 DEPS=src/CelStructure.h
 
 GTEST_DIR=/home/jess/Downloads/gtest-1.7.0

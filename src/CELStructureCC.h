@@ -2,12 +2,13 @@
 * Can load Affymetix CEL GeneChip Command Console Generic data files.
 */
 
-#include <cinttypes>
 #include <stdio.h>
 #include <vector>
-#include <assert.h>
+#include <armadillo>
+#include <math.h>
 
 #include "CommonCELTypes.h"
+#include "CELBase.h"
 
 using namespace std;
 
@@ -39,28 +40,25 @@ class FileHeader {
 
 public:
     FileHeader(char* where):
-    data((FileHeaderData*) where) {
-        cout << "Magic: " << unsigned(data->magic) << endl;
-        cout << "Version: " << unsigned(data->version) << endl;
-        cout << "Number of groups: " << getNumGroups() << endl;
-        // cout << "Position of first group: " << getFirstPosition() << endl;
+    data((FileHeaderData*) where) {}
+
+    uint8_t getMagic() { return unsigned(data->magic); }
+
+    int32_t getNumGroups() { return fromBEtoSigned(data->numGroups); }
+    
+    uint8_t getVersion(){ return data->version; }
+    
+    uint32_t getFirstPosition() {
+        return fromBEtoUnsigned(data->firstPosition);
     }
 
     char* getJump() {
         return (char*) data + sizeof(FileHeaderData); 
     }
 
-    uint32_t getFirstPosition() {
-        return fromBEtoUnsigned(data->firstPosition);
-    }
-
     char* getDataGroupJump(){ 
         return (char*) data + getFirstPosition();
     }
-
-    int32_t getNumGroups(){ return fromBEtoSigned(data->numGroups); }
-    
-    uint8_t getVersion(){ return data->version; }
 };
 
 /*
@@ -242,6 +240,7 @@ public:
     }
 };
 
+// There are some extra bytes after the end of the data... Not sure what they are.
 class DataSet {
     // For now we are not going to keep a lot of the header information
     struct DataSetHeader {
@@ -270,25 +269,18 @@ public:
         cols((char*) (numCols + 4), fromBEtoUnsigned(numCols)),
         numRows((uint8_t*) cols.getJump()),
         dataStart((char*) (numRows + 4)) {
-            cout << "Num cols: " << fromBEtoUnsigned(numCols) << endl;
-
-            /*char* other = (char*) (numRows + 4);
-            printf("Other pointer: %p\n", other);*/
-
+            //cout << "Num cols: " << fromBEtoUnsigned(numCols) << endl;
             //printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
-            cout << "Num rows: " << fromBEtoUnsigned(numRows) << endl;
+            /*cout << "Num rows: " << fromBEtoUnsigned(numRows) << endl;
             cout << "Row size in bytes: " << cols.getRowSize() << endl;
             cout << "Printing first 10 float values: " << endl;
             char *val = dataStart;
             for (int i = 0; i < 10; i++) {
-                //printf("ptr: %p\n", val);
                 cout << fromBEtoFloat(val) << endl;
                 val = val + cols.getRowSize();
             }
-            char* expl = origWhere + fromBEtoUnsigned(dsHeader->nextDataSetPosition);
-            printf("ptr: %p\n", expl);
-            printf("ptr: %p\n", fromBEtoUnsigned((uint8_t*) expl) + origWhere);
-            cout << "Test: " << fromBEtoUnsigned((uint8_t*) expl) << endl;
+            char* expl = dataStart + (cols.getRowSize() * (fromBEtoUnsigned(numRows) - 1));
+            cout << fromBEtoFloat(expl) << endl;*/
             /*cout << "Test: " << fromBEtoUnsigned((uint8_t*) expl + 4) << endl;
             //cout << "Next DS position: " << fromBEtoUnsigned(dsHeader->nextDataSetPosition) << endl;
             cout << "Next string size: " << fromBEtoSigned((uint8_t*) expl + 8) << endl;
@@ -299,6 +291,10 @@ public:
 
     char *getJump() {
         return origWhere + fromBEtoUnsigned(dsHeader->nextDataSetPosition);
+    }
+
+    uint32_t getNumRows() {
+        return fromBEtoUnsigned(numRows);
     }
 };
 
@@ -315,10 +311,12 @@ public:
             dsLocation = dSets.back().getJump();
         }
     }
+
+    DataSet get(int index) { return dSets.at(index); }
 };
 
 // TODO: Add vector of DataSetsForGroup (as opposed to hard coding getGroup(0))
-class CELCommandConsole {
+class CELCommandConsole : public CELBase {
     char* rawData;
     FileHeader fileHeader;
     // GenericDataHeaders gdHeaders;
@@ -336,4 +334,13 @@ public:
     dataSets((where + dataGroups.getGroup(0).getFirstDSPosition()),
         dataGroups.getGroup(0).getNumDataSets(), where)
     {}
+
+    uint8_t getMagic() { return fileHeader.getMagic(); }
+
+    // TODO: Update this for multiple data groups
+    mat getIntensityMatrix() {
+        uint32_t numRows = dataSets.get(0).getNumRows();
+        mat ret(sqrt(numRows), sqrt(numRows));
+        return ret;
+    }
 };
