@@ -39,21 +39,47 @@
 TEST(CELReadTest, CommandConsole) {
   CELFileReader in("demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL");
   CELBase::pointer data = in.readFile();
-  arma::fmat nums = data.get()->getIntensityMatrix();
-  EXPECT_EQ(13707, nums(0, 0));
-  EXPECT_EQ(178, nums(0, 1));
-  EXPECT_EQ(13105, nums(0, 2));
-  EXPECT_EQ(146, nums(0, 3));
-  EXPECT_EQ(71, nums(0, 4));
+
+  arma::fmat intensities = data.get()->getIntensityMatrix();
+  EXPECT_EQ(13707, intensities(0, 0));
+  EXPECT_EQ(178, intensities(0, 1));
+  EXPECT_EQ(13105, intensities(0, 2));
+  EXPECT_EQ(146, intensities(0, 3));
+  EXPECT_EQ(71, intensities(0, 4));
+
+  arma::fmat devs = data.get()->getStdDevMatrix();
+  EXPECT_FLOAT_EQ(1213.2, devs(0, 0));
+  EXPECT_FLOAT_EQ(32.3, devs(0, 1));
+  EXPECT_FLOAT_EQ(1041.9, devs(0, 2));
+  EXPECT_FLOAT_EQ(29, devs(0, 3));
+  EXPECT_FLOAT_EQ(9, devs(0, 4));
+
+  arma::Mat<int16_t> pixels = data.get()->getPixelsMatrix();
+  EXPECT_EQ(9, pixels(0, 0));
+  EXPECT_EQ(9, pixels(0, 1));
+  EXPECT_EQ(9, pixels(5, 6));
 }
 
 TEST(CELReadTest, Version4) {
   CELFileReader in("demoData/xda/GSM1134065_GBX.DISC.PCA2.CEL");
   CELBase::pointer data = in.readFile();
-  arma::fmat nums = data.get()->getIntensityMatrix();
-  EXPECT_EQ(13707, nums(0, 0));
-  EXPECT_EQ(178, nums(0, 1));
-  EXPECT_EQ(13105, nums(0, 2));
-  EXPECT_EQ(146, nums(0, 3));
-  EXPECT_EQ(71, nums(0, 4));
+
+  arma::fmat intensities = data.get()->getIntensityMatrix();
+  EXPECT_EQ(13707, intensities(0, 0));
+  EXPECT_EQ(178, intensities(0, 1));
+  EXPECT_EQ(13105, intensities(0, 2));
+  EXPECT_EQ(146, intensities(0, 3));
+  EXPECT_EQ(71, intensities(0, 4));
+
+  arma::fmat devs = data.get()->getStdDevMatrix();
+  EXPECT_FLOAT_EQ(1213.2, devs(0, 0));
+  EXPECT_FLOAT_EQ(32.3, devs(0, 1));
+  EXPECT_FLOAT_EQ(1041.9, devs(0, 2));
+  EXPECT_FLOAT_EQ(29, devs(0, 3));
+  EXPECT_FLOAT_EQ(9, devs(0, 4));
+
+  arma::Mat<int16_t> pixels = data.get()->getPixelsMatrix();
+  EXPECT_EQ(9, pixels(0, 0));
+  EXPECT_EQ(9, pixels(0, 1));
+  EXPECT_EQ(9, pixels(5, 6));
 }

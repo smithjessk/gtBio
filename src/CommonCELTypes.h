@@ -28,6 +28,16 @@ float fromBEtoFloat(char* data) {
    return retVal;
 }
 
+/**
+ * Convert a 16-bit integer (short) from Big Endian to Little Endian
+ * @param  data A pointer to where the Big Endian representation begins
+ * @return      A short representing the value obtained by swapping the 
+ *              Endianness of 16-bit int pointed to by data
+ */
+int16_t fromBEtoShort(uint8_t* data) {
+    return (data[1] << 0) | (data[0] << 8);
+}
+
 void printFourBytes(uint8_t* data) {
     printf("Printing four bytes: %02x %02x %02x %02x\n", data[0], data[1], data[2], data[3]);
 }
