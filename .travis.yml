@@ -2,6 +2,7 @@ language: cpp
 compiler: clang
 before_install:
   - wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
+  - ls
   - cd gtest-1.7.0
   - ./configure
   - make
