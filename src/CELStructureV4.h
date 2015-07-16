@@ -65,7 +65,7 @@ class CellEntries {
     struct CellEntry {
         float intensity;
         float stdDev; 
-        int16_t pixels; // how many pixels
+        int16_t pixels; // How many pixels
     };
 
     int32_t numRows;
@@ -137,6 +137,18 @@ public:
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getIntensity(i, j);
+            }
+        }
+        return ret;
+    }
+
+    arma::fmat getStdDevMatrix() override {
+        int32_t numRows = header.getNumRows();
+        int32_t numCols = header.getNumCols();
+        arma::fmat ret(numRows, numCols);
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                ret(i, j) = cells.getStdDev(i, j);
             }
         }
         return ret;

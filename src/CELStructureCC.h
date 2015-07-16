@@ -356,13 +356,26 @@ public:
     arma::fmat getIntensityMatrix() {
       char* dStart = dataSets.get(0).getDataStart();
 
-      uint32_t sideLength = sqrt(dataSets.get(0).getNumRows());
-      fmat ret((float*) dStart, sideLength, sideLength); // Square matrix
+      uint32_t sideLength = sqrt(dataSets.get(0).getNumRows()); // Square matrix
+      fmat ret((float*) dStart, sideLength, sideLength); 
         
       ret.transform([] (float &val) {
         return fromBEtoFloat((char*) &val); // Big endian to little 
       });
 
       return ret.t(); // Column-major to row-major
+    }
+
+    arma::fmat getStdDevMatrix() {
+        char* dStart = dataSets.get(1).getDataStart();
+
+        uint32_t sideLength = sqrt(dataSets.get(1).getNumRows());
+        fmat ret((float*) dStart, sideLength, sideLength);
+
+        ret.transform([] (float &val) {
+            return fromBEtoFloat((char*) &val); // Big endian to little
+        });
+
+        return ret.t(); // Column-major to row-major
     }
 };

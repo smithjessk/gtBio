@@ -22,10 +22,21 @@ public:
     virtual int32_t getMagic() = 0;
 
     /**
-     * Get the matrix representing the intensity measurements in the CEL file
+     * Get the matrix representing the intensity measurements in the CEL file.
+     * Enntry (i, j) in this matrix corresponds to entry (i, j) in the result 
+     * of getStdDevMatrix()
      * @return A square float matrix representing the intensity measurements
      */
     virtual fmat getIntensityMatrix() = 0;
+
+    /**
+     * Get the matrix representing the standard deviations of the intensity 
+     * measurements in the CEL file. Entry (i, j) in this matrix corresponds to
+     * entry (i, j) in the result of getIntensityMatrix()
+     * @return A sqaure float matrix representing the standard deviations of 
+     * the intensity measurements.
+     */
+    virtual fmat getStdDevMatrix() = 0;
 };
 
 #endif 
