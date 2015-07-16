@@ -130,10 +130,10 @@ public:
         return header.getMagic();
     }
 
-    arma::fmat getIntensityMatrix() override {
+    fmat getIntensityMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
-        arma::fmat ret(numRows, numCols);
+        fmat ret(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getIntensity(i, j);
@@ -142,13 +142,25 @@ public:
         return ret;
     }
 
-    arma::fmat getStdDevMatrix() override {
+    fmat getStdDevMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
-        arma::fmat ret(numRows, numCols);
+        fmat ret(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getStdDev(i, j);
+            }
+        }
+        return ret;
+    }
+
+    smat getPixelsMatrix() override {
+        int32_t numRows = header.getNumRows();
+        int32_t numCols = header.getNumCols();
+        smat ret(numRows, numCols);
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                ret(i, j) = cells.getPixels(i, j);
             }
         }
         return ret;

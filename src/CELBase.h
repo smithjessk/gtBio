@@ -7,10 +7,12 @@
 
 #include <armadillo>
 #include <memory>
+#include <cinttypes>
 
 class CELBase {
 public:
     using fmat = arma::fmat;
+    using smat = arma::Mat<int16_t>;
     using pointer = std::unique_ptr<CELBase>;
 
     /**
@@ -37,6 +39,15 @@ public:
      * the intensity measurements.
      */
     virtual fmat getStdDevMatrix() = 0;
+
+    /**
+     * Get the matrix representing the number of pixels for each entry in the
+     * CEL file. Entry (i, j) in this matrix corresponds to entry (i, j) in
+     * the result of getIntensityMatrix() and getStdDevMatrix()
+     * @return A sqaure short matrix representing number of pixels for each 
+     * entry in the other two matrices (intensity and standard deviation)
+     */
+    virtual smat getPixelsMatrix() = 0;
 };
 
 #endif 
