@@ -1,0 +1,21 @@
+language: cpp
+compiler: clang
+before_install:
+  - cd ~/Downloads
+  - wget http://googletest.googlecode.com/files/gtest-1.7.0.zip
+  - cd gtest-1.7.0
+  - ./configure
+  - make
+  - sudo cp -a include/gtest /usr/include
+  - sudo cp -a lib/.libs/* /usr/lib/
+before_script:
+  - pwd
+script: "sh ./"
+notifications: 
+  recipients:
+    - smith.jessk@gmail.com
+  email:
+    - on_success: change
+    - on_failure: alway
+rvm:
+  - 9.00
