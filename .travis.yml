@@ -15,6 +15,6 @@ notifications:
     - smith.jessk@gmail.com
   email:
     - on_success: change
-    - on_failure: alway
+    - on_failure: always
 rvm:
   - 9.00
