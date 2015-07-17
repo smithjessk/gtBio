@@ -31,7 +31,6 @@
 
 #include "gtest/gtest.h"
 
-#include "../src/CELBase.h"
 #include "../src/CELFileReader.h"
 
 #include <armadillo>
