@@ -1,11 +1,11 @@
-Package: gtBase
+Package: gtBio
 Type: Package
-Title: R Interface for the Grokit System
+Title: Grokit Bio
 Version: 1.0
-Date: 2013-11-21
-Author: Jon Claus, Tera Insights, LLC
-Maintainer: Jon Claus <jonterainsights@gmail.com>
-Description: R Interface for the Grokit System
-License: Propietary
-Depends: rjson
+Date: 16 July 2015
+Author: Jess Smith, Tera Insights, LLC
+Maintainer: Jess Smith <smith.jessk@gmail.com>
+Description: Bio plugin and R interface for the Grokit system
+License: Academic
+Depends: gtBase
 Suggests: testthat
