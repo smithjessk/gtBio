@@ -1,15 +1,25 @@
 <?
-function CELFileReader(array $t_args, array $output) {
-    // Class name for this GI.
-    $className = generate_name('CELFileReader');
+function CELFileReader(array $t_args, array $outputs) {
+    $fType = lookupType('float');
+    $sType = lookupType('short');
 
-    // Locally named outputs.
-    $output_ = array_combine(['intensity', 'stddev', 'pixels'], $output);
+    $outputs = array_combine(array_keys($outputs),
+        [lookupType('bio::Variable_Matrix', ['type' => $fType],
+         lookupType('bio::Variable_Matrix', ['type' => $fType],
+         lookupType('bio::Variable_Matrix', ['type' => $sType]]);
 
-    $sys_headers  = ['string'];
-    $user_headers = [];
-    $lib_headers  = ['CELFileReader.h'];
-    $libraries    = ['armadillo'];
+    // Locally named outputs. Used for ProduceTuple
+    $outputs_ = array_combine(['intensity', 'stddev', 'pixels'], $outputs);
+
+    $identifier = [
+        'kind'           => 'GI',
+        'name'           => generate_name('CELFileReader'),
+        'system_headers' => ['string'],
+        'user_headers'   => [],
+        'lib_headers'    => ['CELFileReader.h'],
+        'libraries'      => ['armadillo'],
+        'output'         => $outputs
+    ];
 ?>
 
 class <?=className?> {
@@ -26,7 +36,7 @@ class <?=className?> {
         finished(false) {
   }
 
-  bool ProduceTuple(<?=typed_ref_args($output_)?>) {
+  bool ProduceTuple(<?=typed_ref_args($outputs_)?>) {
     if (!finished) {
       CELFileReader in(fileName.c_str());
       CELBase::pointer data = in.readFile();
@@ -41,14 +51,5 @@ class <?=className?> {
 };
 
 <?
-    return [
-        'kind'           => 'GI',
-        'name'           => $className,
-        'system_headers' => $sys_headers,
-        'user_headers'   => $user_headers,
-        'lib_headers'    => $lib_headers,
-        'libraries'      => $libraries,
-        'output'         => $output
-    ];
-}
+    return $identifier;
 ?>
