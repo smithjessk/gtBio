@@ -35,9 +35,11 @@
 
 #include <armadillo>
 
+using namespace gtBio;
+
 TEST(CELReadTest, CommandConsole) {
-  CELFileReader in("demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL");
-  CELBase::pointer data = in.readFile();
+  gtBio::CELFileReader in("demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL");
+  gtBio::CELBase::pointer data = in.readFile();
 
   arma::fmat intensities = data.get()->getIntensityMatrix();
   EXPECT_EQ(13707, intensities(0, 0));
