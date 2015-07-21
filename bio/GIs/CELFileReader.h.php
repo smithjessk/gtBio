@@ -1,19 +1,21 @@
 <?
 function CELFileReader(array $t_args, array $outputs) {
+    $className = generate_name('CELFileReader');
+
     $fType = lookupType('float');
-    $sType = lookupType('short');
+    $sType = lookupType('smallint');
 
     $outputs = array_combine(array_keys($outputs),
-        [lookupType('bio::Variable_Matrix', ['type' => $fType],
-         lookupType('bio::Variable_Matrix', ['type' => $fType],
-         lookupType('bio::Variable_Matrix', ['type' => $sType]]);
+        [lookupType('bio::Variable_Matrix', ['type' => $fType]),
+         lookupType('bio::Variable_Matrix', ['type' => $fType]),
+         lookupType('bio::Variable_Matrix', ['type' => $sType])]);
 
     // Locally named outputs. Used for ProduceTuple
     $outputs_ = array_combine(['intensity', 'stddev', 'pixels'], $outputs);
 
     $identifier = [
         'kind'           => 'GI',
-        'name'           => generate_name('CELFileReader'),
+        'name'           => $className,
         'system_headers' => ['string'],
         'user_headers'   => [],
         'lib_headers'    => ['CELFileReader.h'],
@@ -22,7 +24,7 @@ function CELFileReader(array $t_args, array $outputs) {
     ];
 ?>
 
-class <?=className?> {
+class <?=$className?> {
  private:
   // Absolute file path of the CEL File to be read.
   std::string fileName;
@@ -31,15 +33,15 @@ class <?=className?> {
   bool finished;
 
  public:
-  <?=className?>(GIStreamProxy& _stream)
+  <?=$className?>(GIStreamProxy& _stream)
       : fileName(_stream.get_file_name()),
         finished(false) {
   }
 
   bool ProduceTuple(<?=typed_ref_args($outputs_)?>) {
     if (!finished) {
-      CELFileReader in(fileName.c_str());
-      CELBase::pointer data = in.readFile();
+      gtBio::CELFileReader in(fileName.c_str());
+      gtBio::CELBase::pointer data = in.readFile();
       intensity = data->getIntensityMatrix();
       stddev = data->getStdDevMatrix();
       pixels = data->getPixelsMatrix();
@@ -52,4 +54,5 @@ class <?=className?> {
 
 <?
     return $identifier;
+}
 ?>

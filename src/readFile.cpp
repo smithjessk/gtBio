@@ -1,5 +1,7 @@
 #include "CELFileReader.h"
 
+using namespace gtBio;
+
 int main(int argc, char *argv[]) {
     CELFileReader in(argv[1]);
     CELBase::pointer data = in.readFile();

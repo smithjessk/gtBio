@@ -13,19 +13,32 @@ function Variable_Matrix(array $t_args) {
     grokit_assert($type->is('numeric'),
                   'Matrix: [type] argument must be a numeric datatype.');
 
-    $methods = [];
+    $className = generate_name('VarMatrix');
 
+    $functions = [];
+
+    $methods = [];
     $methods[] = [ 'Mean', [], 'base::float', true ];
+
+    $innerDesc = function($var, $myType) use($type) {
+      $describer = $type->describer('json');
+?>
+      <?=$var?>["fixed"] = false;
+<?
+      $innerVar = "{$var}[\"inner_type\"]";
+      $describer($innerVar, $type);
+    };
+
 
     $identifier = [
         'kind'             => 'TYPE',
-        'name'             => generate_name('VarMatrix');,
-        'system_headers'   => ['armadillo', 'algorithm']
-        'user_headers'     => [],
-        'lib_headers'      => ['ArmaJson'],
+        'name'             => $className,
+        'system_headers'   => ['armadillo', 'algorithm'],
+        'user_headers'     => ['ColumnVarIterator.h'],
+        'lib_headers'      => [],
         'constructors'     => [],
         'methods'          => $methods,
-        'functions'        => [],
+        'functions'        => $functions,
         'binary_operators' => [],
         'unary_operators'  => [],
         'global_content'   => '',
@@ -34,7 +47,6 @@ function Variable_Matrix(array $t_args) {
         'extra'            => ['type' => $type],
         'describe_json'    => DescribeJson('matrix', $innerDesc),
     ];
-}
 
 ?>
 
@@ -57,7 +69,7 @@ inline size_t Serialize(char* buffer, const @type& src) {
   // Write data
   <?=$type?>* asInnerType = reinterpret_cast<<?=$type?>*>(asInts + 2);
   const <?=$type?> * colPtr = src.memptr();
-  std::copy(colPtr, colPtr + @type::n_elem, asInnerType);
+  std::copy(colPtr, colPtr + src.n_elem, asInnerType);
 
   // Return bytes read
   return 8 + src.n_elem * sizeof(<?=$type?>);
@@ -74,7 +86,7 @@ inline size_t Deserialize(const char* buffer, @type& src) {
   uint32_t nCols = ((uint32_t*) buffer)[1];
 
   src.set_size(nRows, nCols);
-  <?=$type?>* asInnerType = reinterpret_cast<<?=$type?>*>(buffer + 8);
+  const <?=$type?>* asInnerType = reinterpret_cast<const <?=$type?>*>(buffer + 8);
   std::copy(asInnerType, asInnerType + (nRows * nCols), src.memptr());
 
   return 8 + (nRows * nCols * sizeof(<?=$type?>));
@@ -87,7 +99,7 @@ inline size_t SizeFromBuffer<@type>(const char* buffer) {
   return 8 + (nRows * nCols * sizeof(<?=$type?>));
 }
 
-inline void ToJson(const @type src, Json::Value& dest) {
+inline void ToJson(const @type& src, Json::Value& dest) {
   dest["__type__"] = "matrix";
   dest["n_rows"] = src.n_rows;
   dest["n_cols"] = src.n_cols;
@@ -98,19 +110,15 @@ inline void ToJson(const @type src, Json::Value& dest) {
   dest["data"] = content;
 }
 
-<?  $globalContent .= ob_get_clean(); ?>
+<?  $identifier['global_content'] = ob_get_clean(); ?>
+
+<? $functions[] = ['MatrixMean', ['@type'], $type, true, false ]; ?>
+inline float MatrixMean(const <?=$className?>& src) {
+  return mean(mean(src));
+}
 
 <?
-    $innerDesc = function($var, $myType) use($type, $ncol, $nrow) {
-        $describer = $type->describer('json');
-?>
-        <?=$var?>["n_cols"] = Json::Int64(<?=$ncol?>);
-        <?=$var?>["n_rows"] = Json::Int64(<?=$nrow?>);
-
-<?
-        $innerVar = "{$var}[\"inner_type\"]";
-        $describer($innerVar, $type);
-    };
+    $identifier['functions'] = $functions;
     return $identifier;
 }
 

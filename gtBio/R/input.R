@@ -1,11 +1,10 @@
-ReadCEL <- function(files, outputs = c(Intensity, StdDev, Pixels), ...) {
-  outputs <- quote(outputs)
-  check.atts(outputs)
-  outputs <- convert.atts(outputs)
+ReadCEL <- function(files, outputs, ...) {
+  if (missing(outputs)) {
+    outputs <- c("Intensity", "StdDev", "Pixels")
+  }
 
   alias <- create.alias("read")
-  gi <- GI(base::CELFileReader)
-  Input(files = files, alias = alias, gi = gi, outputs = outputs)
+  gi <- GI(bio::CELFileReader)
+  data <- Input(files = files, alias = alias, gi = gi, schema = outputs, ...)
+  set.class(c(data), c("ReadFile", class(data)))
 }
-
-# View(ReadCEL("./myfile.CEL"))$content
