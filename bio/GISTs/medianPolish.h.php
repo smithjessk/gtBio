@@ -125,7 +125,9 @@ class <?=$className?> {
     }
   }
 
-  int GetNumFragments() {}
+  int GetNumFragments() {
+    return numThreads;
+  }
 
   Iterator* Finalize(long fragment) {}
 
