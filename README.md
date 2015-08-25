@@ -18,5 +18,14 @@ Note that this requires the Google Testing framework. For a sample way to instal
     
 #### R Package ####
 
+If you have `sudo` permissions:
+
     $ cd gtBio
     $ R CMD INSTALL .
+    
+To install locally:
+
+    $ cd gtBio
+    $ R CMD INSTALL -l ~/my/directory .
+    
+where `~/my/directory` is a folder R knows to search for libraries.
