@@ -13,19 +13,25 @@ Note that this requires the Google Testing framework. For a sample way to instal
 
 #### C++ Library ####
 
-    $ make core # To build the core C++ library
-    $ make tests # To build the google tests
+```bash
+$ make core # To build the core C++ library
+$ make tests # To build the google tests
+```
     
 #### R Package ####
 
 If you have `sudo` permissions:
 
-    $ cd gtBio
-    $ R CMD INSTALL .
-    
+``` bash
+$ cd gtBio
+$ R CMD INSTALL .
+```
+
 To install locally:
 
-    $ cd gtBio
-    $ R CMD INSTALL -l ~/my/directory .
-    
+```bash
+$ cd gtBio
+$ R CMD INSTALL -l ~/my/directory .
+```
+
 where `~/my/directory` is a folder R knows to search for libraries.
