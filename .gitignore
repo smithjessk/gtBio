@@ -1,5 +1,9 @@
-testdata
 bin/*
+fileReaderUnitTest
+fileReaderUnitTest.o
+gtest-all.o
+gtest_main.a
+gtest_main.o
 
 # Sublime
 *.sublime-project
