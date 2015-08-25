@@ -94,8 +94,8 @@ class <?=$className?> {
  public:
   <?=$className?>(<?=const_typed_ref_args($states_)?>):
       roundNum(0) {
-    cout << "Constructed GIST state" << endl;
-  }
+        cout << "Constructed GIST state" << endl;
+      }
 
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int numThreads) {

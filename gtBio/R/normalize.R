@@ -1,3 +1,3 @@
 MedianPolish <- function(matrix, ...) {
-  gist <- GIST(bio::MedianPolish)
+  GIST(bio::MedianPolish, matrix = matrix)
 }
