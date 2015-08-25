@@ -25,6 +25,7 @@ If you have `sudo` permissions:
 ``` bash
 $ cd gtBio
 $ R CMD INSTALL .
+$ grokit makelib ../bio
 ```
 
 To install locally:
@@ -32,6 +33,7 @@ To install locally:
 ```bash
 $ cd gtBio
 $ R CMD INSTALL -l ~/my/directory .
+$ grokit makelib ../bio
 ```
 
 where `~/my/directory` is a folder R knows to search for libraries.
