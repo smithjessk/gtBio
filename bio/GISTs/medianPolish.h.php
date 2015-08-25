@@ -64,14 +64,6 @@ class <?=$className?> {
     }
   };
 
-  struct Iterator {
-    // The fragment ID for this tree, corresponding to the tree index.
-    long fragmentID;
-
-    // The index for the current output of this fragment.
-    long fragmentIndex;
-  };
-
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
   using Matrix = <?=$states[0]?>::Matrix;
@@ -125,13 +117,9 @@ class <?=$className?> {
     }
   }
 
-  int GetNumFragments() {
-    return numThreads;
+  void GetResult(<?=typed_ref_args($output)?>) {
+    output = matrix;
   }
-
-  Iterator* Finalize(long fragment) {}
-
-  bool GetNextResult(Iterator* it, <?=typed_ref_args($outputs_)?>) {}
 }
 
 <?

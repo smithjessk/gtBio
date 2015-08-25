@@ -1,4 +1,5 @@
 testdata
+bin/*
 
 # Sublime
 *.sublime-project

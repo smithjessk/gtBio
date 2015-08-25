@@ -108,13 +108,7 @@ class DataGroup {
 
 public:
     DataGroup(char* where):
-        data((DataGroupData*) where) 
-        {
-            /*cout << fromBEtoUnsigned(data->firstDataSetPosition) << endl;
-            printUnicodeBytes((char*) data->nameSize + 4, 2 * fromBEtoSigned(data->nameSize));
-            char* test = where + 16 + 2 * fromBEtoSigned(data->nameSize) ;
-            cout << fromBEtoSigned((uint8_t*) test) << endl;*/
-        }    
+        data((DataGroupData*) where) {}
     
     uint32_t getNextPosition() {
         return fromBEtoUnsigned((uint8_t*) data->nextPosition);
@@ -203,12 +197,7 @@ public:
     Column(char* where):
     strSize((uint8_t*) where),
     value(strSize + 4 + 2 * fromBEtoSigned(strSize)),
-    valSize(value + 1) {
-        //printUnicodeBytes((char*) (strSize) + 4, 2 * fromBEtoSigned(strSize));
-        /*cout << "String size: " << fromBEtoSigned(strSize) << endl;
-        cout << "Value: " << unsigned(*value) << endl; // TODO: Enum?
-        cout << "Value size: " << fromBEtoSigned(valSize) << endl;*/
-    }
+    valSize(value + 1) {}
 
     int32_t getValSize() {
         return fromBEtoSigned(valSize);
@@ -224,7 +213,6 @@ class Columns {
 
 public:
     Columns(char* where, uint32_t numCols) {
-        //cout << "Num cols: " << numCols << endl;
         cols.push_back(Column(where));
         for (int i = 1; i < numCols; i++) {
             cols.push_back(Column(cols[i - 1].getJump()));
@@ -273,26 +261,7 @@ public:
         cols((char*) (numCols + 4), fromBEtoUnsigned(numCols)),
         numRows((uint8_t*) cols.getJump()),
         sqrtOfRows(sqrt(fromBEtoUnsigned(numRows))),
-        dataStart((char*) (numRows + 4)) {
-            //cout << "Num cols: " << fromBEtoUnsigned(numCols) << endl;
-            //printUnicodeBytes((char*) (dsHeader->nameSize) + 4, 2 * fromBEtoSigned(dsHeader->nameSize));
-            /*cout << "Num rows: " << fromBEtoUnsigned(numRows) << endl;
-            cout << "Row size in bytes: " << cols.getRowSize() << endl;
-            cout << "Printing first 10 float values: " << endl;
-            char *val = dataStart;
-            for (int i = 0; i < 10; i++) {
-                cout << fromBEtoFloat(val) << endl;
-                val = val + cols.getRowSize();
-            }
-            char* expl = dataStart + (cols.getRowSize() * (fromBEtoUnsigned(numRows) - 1));
-            cout << fromBEtoFloat(expl) << endl;*/
-            /*cout << "Test: " << fromBEtoUnsigned((uint8_t*) expl + 4) << endl;
-            //cout << "Next DS position: " << fromBEtoUnsigned(dsHeader->nextDataSetPosition) << endl;
-            cout << "Next string size: " << fromBEtoSigned((uint8_t*) expl + 8) << endl;
-            printUnicodeBytes(expl + 12, 2 * fromBEtoSigned((uint8_t*) expl + 8));
-            cout << "Test: " << fromBEtoUnsigned((uint8_t*) expl + 12) << endl;
-            cout << "Test: " << fromBEtoUnsigned((uint8_t*) expl + 16) << endl;*/
-        }
+        dataStart((char*) (numRows + 4)) {}
 
     char *getJump() {
         return origWhere + fromBEtoUnsigned(dsHeader->nextDataSetPosition);

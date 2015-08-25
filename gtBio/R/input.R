@@ -3,8 +3,6 @@ ReadCEL <- function(paths, outputs, ...) {
     outputs <- c("Intensity", "StdDev", "Pixels")
   }
 
-  # Expand directories to their lists of files
-
   alias <- create.alias("read")
   gi <- GI(bio::CELFileReader)
   data <- Input(files = paths, alias = alias, gi = gi, schema = outputs, ...)
