@@ -1,4 +1,6 @@
 bin/*
+
+gtBio/..Rcheck
 fileReaderUnitTest
 fileReaderUnitTest.o
 gtest-all.o

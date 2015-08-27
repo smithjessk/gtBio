@@ -92,6 +92,7 @@ class <?=$className?> {
 
  public:
   <?=$className?>(<?=const_typed_ref_args($states_)?>):
+      matrix(<?=$states[0]?>).GetMatrix()),
       roundNum(0) {
         cout << "Constructed GIST state" << endl;
       }
@@ -123,4 +124,5 @@ class <?=$className?> {
 
 <?
     return $identifier;
+}
 ?>
