@@ -12,7 +12,6 @@ function Median_Polish($t_args, $outputs, $states) {
         'output'        => $output,
         'result_type'   => 'single',
     ];
-}
 ?>
 
 class ConvergenceGLA {
