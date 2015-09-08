@@ -386,10 +386,10 @@ public:
         char* dStart = dataSets.get(2).getDataStart();
 
         uint32_t sideLength = sqrt(dataSets.get(2).getNumRows());
-        imat ret((int16_t*) dStart, sideLength, sideLength);
+        imat ret((int32_t*) dStart, sideLength, sideLength);
 
         ret.transform([] (int32_t &val) {
-            return fromBEtoShort((uint8_t*) &val); // Big endian to little
+            return fromBEtoSigned((uint8_t*) &val); // Big endian to little
         });
 
         return ret.t(); // Column-major to row-major
