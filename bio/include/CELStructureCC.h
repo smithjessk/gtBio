@@ -382,13 +382,13 @@ public:
         return ret.t(); // Column-major to row-major
     }
 
-    smat getPixelsMatrix() override {
+    imat getPixelsMatrix() override {
         char* dStart = dataSets.get(2).getDataStart();
 
         uint32_t sideLength = sqrt(dataSets.get(2).getNumRows());
-        smat ret((int16_t*) dStart, sideLength, sideLength);
+        imat ret((int16_t*) dStart, sideLength, sideLength);
 
-        ret.transform([] (int16_t &val) {
+        ret.transform([] (int32_t &val) {
             return fromBEtoShort((uint8_t*) &val); // Big endian to little
         });
 

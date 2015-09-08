@@ -1,10 +1,12 @@
 ReadCEL <- function(paths, outputs, ...) {
   if (missing(outputs)) {
-    outputs <- c("Intensity", "StdDev", "Pixels")
+    outputs <- list(
+      Intensity = TYPE(bio::VariableMatrix, type = TYPE(base::float)), 
+      StdDev = TYPE(bio::VariableMatrix, type = TYPE(base::float)),
+      Pixels = TYPE(bio::VariableMatrix, type = TYPE(base::int)))
   }
-
   alias <- create.alias("read")
   gi <- GI(bio::CELFileReader)
-  data <- Input(files = paths, alias = alias, gi = gi, schema = outputs, ...)
+  data <- Input(files = paths, gi = gi, outputs = outputs, ...)
   set.class(c(data), c("ReadFile", class(data)))
 }

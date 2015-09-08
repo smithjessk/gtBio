@@ -157,10 +157,10 @@ public:
         return ret;
     }
 
-    smat getPixelsMatrix() override {
+    imat getPixelsMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
-        smat ret(numRows, numCols);
+        imat ret(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getPixels(i, j);

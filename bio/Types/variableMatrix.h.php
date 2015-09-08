@@ -112,16 +112,37 @@ inline void ToJson(const @type& src, Json::Value& dest) {
 
 <?  $identifier['global_content'] = ob_get_clean(); ?>
 
-<? $functions[] = ['MatrixMean', ['@type'], $type, true, false ]; ?>
-inline float MatrixMean(const <?=$className?>& src) {
-  return mean(mean(src));
-}
-
 <?
-    $identifier['functions'] = $functions;
     return $identifier;
 }
 
 declareType('VariableMatrix', 'bio::Variable_Matrix', []);
 
+function MatrixMean($args, $targs) {
+  grokit_assert(\count($args) == 1,
+    'MatrixMean supports exactly 1 input, ' . \count($args) . ' given');
+
+  $inputType = lookupType($args[0]);
+
+  grokit_assert($inputType->is('matrix'),
+    'MatrixMean given non-matrix input');
+
+  $resultType = $inputType->get('type');
+  $funcName = generate_name('MatrixMean');
+?>
+
+<?=$resultType?> <?=$funcName?>( const <?=$inputType?>& x ) {
+  return mean(mean(x));
+}
+
+<?
+  return [
+      'kind' => 'FUNCTION',
+      'input' => $args,
+      'name' => $funcName,
+      'args' => [ $inputType ],
+      'result' => $resultType,
+      'determinsitic' => true
+  ];
+}
 ?>
