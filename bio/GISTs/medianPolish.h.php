@@ -2,6 +2,7 @@
 function Median_Polish($t_args, $outputs, $states) {
     $className = generate_name('MP');
     $output = ['polished_matrix' => lookupType('bio::Variable_Matrix')];
+    $matrixType = array_values($states)[0];
 
     $identifier = [
         'kind'  => 'GIST',
@@ -65,7 +66,7 @@ class <?=$className?> {
 
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
-  using Matrix = <?=$states[0]?>::Matrix;
+  using Matrix = <?=$matrixType?>::Matrix;
   using cGLA = ConvergenceGLA;
   using WorkUnit = pair<LocalScheduler*, cGLA*>;
   using WorkUnits = vector<WorkUnit>;
@@ -91,8 +92,8 @@ class <?=$className?> {
   }
 
  public:
-  <?=$className?>(<?=const_typed_ref_args($states_)?>):
-      matrix(<?=$states[0]?>).GetMatrix()),
+  <?=$className?>(<?=const_typed_ref_args($states)?>):
+      matrix(<?=$matrixType?>).GetMatrix()),
       roundNum(0) {
         cout << "Constructed GIST state" << endl;
       }
