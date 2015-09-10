@@ -1,7 +1,7 @@
 <?
 function Median_Polish($t_args, $outputs, $states) {
     $className = generate_name('MP');
-    $output = ['polished_matrix' => lookupType('Variable_Matrix')];
+    $output = ['polished_matrix' => lookupType('bio::Variable_Matrix')];
 
     $identifier = [
         'kind'  => 'GIST',
