@@ -19,7 +19,7 @@ all : core $(TESTS)
 tests : $(TESTS)
 
 core:
-	$(CC) $(CFLAGS) -o bin/readFile src/readFile.cpp -I.
+	$(CC) $(CFLAGS) -o bin/readFile src/readFile.cc -I.
 
 clean:
 	rm -f $(TESTS) gtest.a gtest_main.a *.o bin/readFile
