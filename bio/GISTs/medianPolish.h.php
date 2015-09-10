@@ -1,8 +1,11 @@
 <?
 function Median_Polish($t_args, $outputs, $states) {
-    $className = generate_name('MP');
-    $output = ['polished_matrix' => lookupType('bio::Variable_Matrix')];
+    $className = generate_name('Median_Polish');
+    $matrix = array_keys($states)[0];
     $matrixType = array_values($states)[0];
+    $innerType = $matrixType->get('type');
+    $output = ['polished_matrix' => lookupType('bio::Variable_Matrix', 
+      ['type' => $innerType])];
 
     $identifier = [
         'kind'  => 'GIST',
@@ -47,7 +50,7 @@ class <?=$className?> {
 
     LocalScheduler(int index) :
         threadIndex(index),
-        scheduledTask(false) {}
+        finishedScheduling(false) {}
 
     bool GetNextTask(Task& task) {
       bool ret = !finishedScheduling;
@@ -68,14 +71,14 @@ class <?=$className?> {
   // type-agnostic.
   using Matrix = <?=$matrixType?>::Matrix;
   using cGLA = ConvergenceGLA;
-  using WorkUnit = pair<LocalScheduler*, cGLA*>;
-  using WorkUnits = vector<WorkUnit>;
+  using WorkUnit = std::pair<LocalScheduler*, cGLA*>;
+  using WorkUnits = std::vector<WorkUnit>;
 
  private:
   // Without a limit on the number of iterations, the process could never end.
-  int roundNum;
-  int numThreads;
-  Matrix matrix;
+  static int roundNum;
+  static int numThreads;
+  static Matrix matrix;
 
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
@@ -92,20 +95,22 @@ class <?=$className?> {
   }
 
  public:
-  <?=$className?>(<?=const_typed_ref_args($states)?>):
-      matrix(<?=$matrixType?>).GetMatrix()),
-      roundNum(0) {
-        cout << "Constructed GIST state" << endl;
+  <?=$className?>(<?=const_typed_ref_args($states)?>) {
+        matrix = <?=$matrix?>.GetMatrix();
+        roundNum = 0;
+        std::cout << "Constructed GIST state" << std::endl;
       }
 
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int numThreads) {
     roundNum++;
     this->numThreads = numThreads;
-    cout << "Beginning round " << roundNum << " with " << numThreads
-      << " workers." << endl;
+    std::cout << "Beginning round " << roundNum << " with " << numThreads
+      << " workers." << std::endl;
+    std::pair<LocalScheduler*, cGLA*> worker;
     for (int counter = 0; counter < numThreads; counter++) {
-      workers.push_back(new LocalScheduler(counter), new cGLA(roundNum));
+      worker = std::make_pair(new LocalScheduler(counter), new cGLA(roundNum));
+      workers.push_back(worker);
     }
   }
 
@@ -119,9 +124,9 @@ class <?=$className?> {
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
-    output = matrix;
+    polished_matrix = matrix;
   }
-}
+};
 
 <?
     return $identifier;
