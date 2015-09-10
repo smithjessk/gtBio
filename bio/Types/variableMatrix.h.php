@@ -86,7 +86,8 @@ inline size_t Deserialize(const char* buffer, @type& src) {
   uint32_t nCols = ((uint32_t*) buffer)[1];
 
   src.set_size(nRows, nCols);
-  const <?=$type?>* asInnerType = reinterpret_cast<const <?=$type?>*>(buffer + 8);
+  const <?=$type?>* asInnerType = 
+    reinterpret_cast<const <?=$type?>*>(buffer + 8);
   std::copy(asInnerType, asInnerType + (nRows * nCols), src.memptr());
 
   return 8 + (nRows * nCols * sizeof(<?=$type?>));
@@ -104,9 +105,11 @@ inline void ToJson(const @type& src, Json::Value& dest) {
   dest["n_rows"] = src.n_rows;
   dest["n_cols"] = src.n_cols;
   Json::Value content(Json::arrayValue);
-  for (int i = 0; i < src.n_rows; i++)
-    for (int j = 0; j < src.n_cols; j++)
-      content[i * src.n_cols + j] = src(i, j);
+  for (int i = 0; i < src.n_rows; i++) {
+    for (int j = 0; j < src.n_cols; j++) {
+      content[(int)(i * src.n_cols + j)] = src(i, j);
+    }
+  }
   dest["data"] = content;
 }
 

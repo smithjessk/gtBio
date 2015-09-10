@@ -14,7 +14,7 @@ namespace gtBio {
 class CELBase {
 public:
     using fmat = arma::fmat;
-    using imat = arma::imat;
+    using imat = arma::Mat<int32_t>;
     using pointer = std::unique_ptr<CELBase>;
 
     /**
