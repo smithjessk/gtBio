@@ -2,13 +2,13 @@
 function CELFileReader(array $t_args, array $outputs) {
     $className = generate_name('CELFileReader');
 
-    $fType = lookupType('float');
-    $iType = lookupType('int');
+    $floatType = lookupType('float');
+    $intType = lookupType('int');
 
     $outputs = array_combine(array_keys($outputs),
-        [lookupType('bio::Variable_Matrix', ['type' => $fType]),
-         lookupType('bio::Variable_Matrix', ['type' => $fType]),
-         lookupType('bio::Variable_Matrix', ['type' => $iType])]);
+        [lookupType('bio::Variable_Matrix', ['type' => $floatType]),
+         lookupType('bio::Variable_Matrix', ['type' => $floatType]),
+         lookupType('bio::Variable_Matrix', ['type' => $intType])]);
 
     // Locally named outputs. Used for ProduceTuple
     $outputs_ = array_combine(['intensity', 'stddev', 'pixels'], $outputs);

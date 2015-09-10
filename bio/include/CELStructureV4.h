@@ -68,7 +68,7 @@ class CellEntries {
     struct CellEntry {
         float intensity;
         float stdDev; 
-        int16_t pixels; // How many pixels
+        int32_t pixels; // How many pixels
     };
 
     int32_t numRows;
@@ -101,8 +101,8 @@ public:
         return *stdDev;
     }
 
-    int16_t getPixels(int row, int col) {
-        int16_t *pixels = (int16_t*) (getJumpToCellEntry(row, col) + 8);
+    int32_t getPixels(int row, int col) {
+        int32_t *pixels = (int32_t*) (getJumpToCellEntry(row, col) + 8);
         return *pixels;
     }
 };
