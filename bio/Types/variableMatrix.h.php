@@ -5,7 +5,7 @@
 <?
 
 function Variable_Matrix(array $t_args) {
-    $type = get_default($t_args, 'type', lookupType("base::double"));
+    $type = get_default($t_args, 'type', lookupType('base::double'));
 
     lookupType($type);
     grokit_assert(is_datatype($type),
@@ -13,7 +13,7 @@ function Variable_Matrix(array $t_args) {
     grokit_assert($type->is('numeric'),
                   'Matrix: [type] argument must be a numeric datatype.');
 
-    $className = generate_name('VarMatrix');
+    $className = generate_name('Variable_Matrix');
 
     $functions = [];
 
