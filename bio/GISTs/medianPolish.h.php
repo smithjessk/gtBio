@@ -41,7 +41,9 @@ class <?=$className?> {
  public:
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
+  using InnerType = <?=$innerType?>;
   using Matrix = <?=$matrixType?>::Matrix;
+  using cGLA = ConvergenceGLA;
 
   struct Task {
     long startIndex; // Which row or column this local scheduler starts at
@@ -51,15 +53,15 @@ class <?=$className?> {
   struct LocalScheduler {
     int threadIndex;
     bool finishedScheduling;
+    int numThreads;
     int &roundNum;
-    int &numThreads;
     Matrix &matrix;
 
-    LocalScheduler(int index, int &roundNum, int &numThreads, Matrix &matrix) :
+    LocalScheduler(int index, int &roundNum, int numThreads, Matrix &matrix) :
         threadIndex(index),
         finishedScheduling(false),
-        roundNum(roundNum),
         numThreads(numThreads),
+        roundNum(roundNum),
         matrix(matrix) {}
 
     bool GetNextTask(Task& task) {
@@ -70,14 +72,17 @@ class <?=$className?> {
       } else {
         count = matrix.n_cols;
       }
+      /*std::cout << "Thread index: " << threadIndex << std::endl;
+      std::cout << "Count: " << count << std::endl;
+      std::cout << "Num threads: " << numThreads << std::endl;*/
       task.startIndex = threadIndex * count / numThreads;
       task.endIndex = (threadIndex + 1) * count / (numThreads - 1);
+      //std::cout << "Got the start and end indices" << std::endl;
       finishedScheduling = true;
       return ret;
     }
   };
 
-  using cGLA = ConvergenceGLA;
   using WorkUnit = std::pair<LocalScheduler*, cGLA*>;
   using WorkUnits = std::vector<WorkUnit>;
 
@@ -90,22 +95,26 @@ class <?=$className?> {
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
     int end = task.endIndex;
-    auto medians = median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    matrix.submat(start, 0, end, matrix.n_cols - 1) - medians;
+    /*std::cout << "Start: " << start << std::endl;
+    std::cout << "End: " << end << std::endl;*/
+    arma::Col<InnerType> medVal = 
+      median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
+    arma::Col<InnerType> med(matrix.n_cols);
+    med.fill(medVal(0, 0));
+    matrix.submat(start, 0, end, matrix.n_cols - 1) - med.t();
   }
 
   void ColPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
     int end = task.endIndex;
-    auto medians = median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    matrix.submat(start, 0, end, matrix.n_cols - 1) - medians;
+    auto medVal = median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
+    matrix.submat(start, 0, end, matrix.n_cols - 1) - medVal;
   }
 
  public:
   <?=$className?>(<?=const_typed_ref_args($states)?>) {
         matrix = <?=$matrix?>.GetMatrix();
         roundNum = 0;
-        std::cout << "Constructed GIST state" << std::endl;
       }
 
   // Advance the round number and distribute work among the threads
@@ -120,13 +129,16 @@ class <?=$className?> {
         matrix), new cGLA(roundNum));
       workers.push_back(worker);
     }
+    //std::cout << "Successfully prepared round." << std::endl;
   }
 
   // If round number is odd, do a row polish. Otherwise, do a column polish.
   void DoStep(Task& task, cGLA& gla) {
     if (roundNum % 2 == 1) {
+      //std::cout << "Performing row polish." << std::endl;
       RowPolish(task, gla);
     } else {
+      //std::cout << "Performing column polish." << std::endl;
       ColPolish(task, gla);
     }
   }
