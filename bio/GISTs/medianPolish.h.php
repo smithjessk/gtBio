@@ -39,6 +39,10 @@ class ConvergenceGLA {
 
 class <?=$className?> {
  public:
+  // We don't know what type of matrix we will be passed, so it is best to be
+  // type-agnostic.
+  using Matrix = <?=$matrixType?>::Matrix;
+
   struct Task {
     long startIndex; // Which row or column this local scheduler starts at
     long endIndex; // Which row/col it ends at. Inclusive bound.
@@ -47,10 +51,16 @@ class <?=$className?> {
   struct LocalScheduler {
     int threadIndex;
     bool finishedScheduling;
+    int &roundNum;
+    int &numThreads;
+    Matrix &matrix;
 
-    LocalScheduler(int index) :
+    LocalScheduler(int index, int &roundNum, int &numThreads, Matrix &matrix) :
         threadIndex(index),
-        finishedScheduling(false) {}
+        finishedScheduling(false),
+        roundNum(roundNum),
+        numThreads(numThreads),
+        matrix(matrix) {}
 
     bool GetNextTask(Task& task) {
       bool ret = !finishedScheduling;
@@ -67,18 +77,15 @@ class <?=$className?> {
     }
   };
 
-  // We don't know what type of matrix we will be passed, so it is best to be
-  // type-agnostic.
-  using Matrix = <?=$matrixType?>::Matrix;
   using cGLA = ConvergenceGLA;
   using WorkUnit = std::pair<LocalScheduler*, cGLA*>;
   using WorkUnits = std::vector<WorkUnit>;
 
  private:
   // Without a limit on the number of iterations, the process could never end.
-  static int roundNum;
-  static int numThreads;
-  static Matrix matrix;
+  int roundNum;
+  int numThreads;
+  Matrix matrix;
 
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
@@ -109,7 +116,8 @@ class <?=$className?> {
       << " workers." << std::endl;
     std::pair<LocalScheduler*, cGLA*> worker;
     for (int counter = 0; counter < numThreads; counter++) {
-      worker = std::make_pair(new LocalScheduler(counter), new cGLA(roundNum));
+      worker = std::make_pair(new LocalScheduler(counter, roundNum, numThreads,
+        matrix), new cGLA(roundNum));
       workers.push_back(worker);
     }
   }
