@@ -10,7 +10,7 @@ function Median_Polish($t_args, $outputs, $states) {
     $identifier = [
         'kind'  => 'GIST',
         'name'  => $className,
-        'system_headers' => ['armadillo'],
+        'system_headers' => ['armadillo', 'algorithm'],
         'libraries'     => ['armadillo'],
         'iterable'      => true,
         'output'        => $output,
@@ -73,10 +73,11 @@ class <?=$className?> {
         count = matrix.n_cols;
       }
       /*std::cout << "Thread index: " << threadIndex << std::endl;
-      std::cout << "Count: " << count << std::endl;
       std::cout << "Num threads: " << numThreads << std::endl;*/
-      task.startIndex = threadIndex * count / numThreads;
-      task.endIndex = (threadIndex + 1) * count / (numThreads - 1);
+      task.startIndex = (threadIndex + 1) * count / numThreads - 1;
+      task.endIndex = threadIndex * count / numThreads;
+      std::cout << "Start: " << task.startIndex << std::endl;
+      std::cout << "End: " << task.endIndex << std::endl;
       //std::cout << "Got the start and end indices" << std::endl;
       finishedScheduling = true;
       return ret;
@@ -120,7 +121,12 @@ class <?=$className?> {
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int numThreads) {
     roundNum++;
-    this->numThreads = numThreads;
+    int minDimension = 5; // std::min(matrix.n_rows, matrix.n_cols);
+    if (minDimension < numThreads) {
+      this->numThreads = minDimension;
+    } else {
+      this->numThreads = numThreads;
+    }
     std::cout << "Beginning round " << roundNum << " with " << numThreads
       << " workers." << std::endl;
     std::pair<LocalScheduler*, cGLA*> worker;
