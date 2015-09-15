@@ -72,13 +72,8 @@ class <?=$className?> {
       } else {
         count = matrix.n_cols;
       }
-      /*std::cout << "Thread index: " << threadIndex << std::endl;
-      std::cout << "Num threads: " << numThreads << std::endl;*/
-      task.startIndex = (threadIndex + 1) * count / numThreads - 1;
-      task.endIndex = threadIndex * count / numThreads;
-      std::cout << "Start: " << task.startIndex << std::endl;
-      std::cout << "End: " << task.endIndex << std::endl;
-      //std::cout << "Got the start and end indices" << std::endl;
+      task.startIndex = threadIndex * count / numThreads;
+      task.endIndex = (threadIndex + 1) * count / numThreads - 1;
       finishedScheduling = true;
       return ret;
     }
@@ -96,8 +91,6 @@ class <?=$className?> {
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
     int end = task.endIndex;
-    /*std::cout << "Start: " << start << std::endl;
-    std::cout << "End: " << end << std::endl;*/
     arma::Col<InnerType> medVal = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
     arma::Col<InnerType> med(matrix.n_cols);
@@ -108,8 +101,10 @@ class <?=$className?> {
   void ColPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
     int end = task.endIndex;
-    auto medVal = median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    matrix.submat(start, 0, end, matrix.n_cols - 1) - medVal;
+    arma::Col<InnerType> medVal = 
+      median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
+    arma::Col<InnerType> med(matrix.n_rows);
+    matrix.submat(start, 0, end, matrix.n_cols - 1) - med.t();
   }
 
  public:
@@ -121,21 +116,18 @@ class <?=$className?> {
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int numThreads) {
     roundNum++;
-    int minDimension = 5; // std::min(matrix.n_rows, matrix.n_cols);
-    if (minDimension < numThreads) {
-      this->numThreads = minDimension;
-    } else {
-      this->numThreads = numThreads;
-    }
-    std::cout << "Beginning round " << roundNum << " with " << numThreads
+    arma::uword n_rows = matrix.n_rows;
+    arma::uword n_cols = matrix.n_cols;
+    int minDimension = std::min(n_rows, n_cols);
+    this->numThreads = std::min(minDimension, numThreads);
+    std::cout << "Beginning round " << roundNum << " with " << this->numThreads
       << " workers." << std::endl;
     std::pair<LocalScheduler*, cGLA*> worker;
-    for (int counter = 0; counter < numThreads; counter++) {
-      worker = std::make_pair(new LocalScheduler(counter, roundNum, numThreads,
-        matrix), new cGLA(roundNum));
+    for (int counter = 0; counter < this->numThreads; counter++) {
+      worker = std::make_pair(new LocalScheduler(counter, roundNum, 
+        this->numThreads, matrix), new cGLA(roundNum));
       workers.push_back(worker);
     }
-    //std::cout << "Successfully prepared round." << std::endl;
   }
 
   // If round number is odd, do a row polish. Otherwise, do a column polish.
