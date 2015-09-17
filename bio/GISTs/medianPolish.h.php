@@ -4,6 +4,7 @@ function Median_Polish($t_args, $outputs, $states) {
     $matrix = array_keys($states)[0];
     $matrixType = array_values($states)[0];
     $innerType = $matrixType->get('type');
+    $shouldTranspose = get_default($t_args, 'shouldTranspose', False);
     $output = ['polished_matrix' => lookupType('bio::Variable_Matrix', 
       ['type' => $innerType])];
 
@@ -91,8 +92,12 @@ class <?=$className?> {
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
     int end = task.endIndex;
+    /*std::cout << "Num rows: " << temp.n_rows << std::endl;
+    std::cout << "Num cols: " << temp.n_cols << std::endl;
+    printf("Entries: %d, %d, %d, %d, %d", temp(0, 0), temp(0, 1), temp(0, 2), temp(0, 3), temp(0, 4));*/
     arma::Col<InnerType> medVal = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
+    printf("Row polish with start %d and end %d has median value %d\n", start, end, medVal(0, 0));
     arma::Col<InnerType> med(matrix.n_cols);
     med.fill(medVal(0, 0));
     matrix.submat(start, 0, end, matrix.n_cols - 1) - med.t();
@@ -103,13 +108,21 @@ class <?=$className?> {
     int end = task.endIndex;
     arma::Col<InnerType> medVal = 
       median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
+    printf("Col polish with start %d and end %d has median value %d\n", start, end, medVal(0, 0));
     arma::Col<InnerType> med(matrix.n_rows);
+    med.fill(medVal(0, 0));
     matrix.submat(start, 0, end, matrix.n_cols - 1) - med.t();
   }
 
  public:
   <?=$className?>(<?=const_typed_ref_args($states)?>) {
+
+<? if ($shouldTranspose) { ?>
+        std::cout << "Transposing matrix..." << std::endl;
+        matrix = <?=$matrix?>.GetMatrix().t();
+<? } else { ?>
         matrix = <?=$matrix?>.GetMatrix();
+<? } ?> 
         roundNum = 0;
       }
 
@@ -133,10 +146,8 @@ class <?=$className?> {
   // If round number is odd, do a row polish. Otherwise, do a column polish.
   void DoStep(Task& task, cGLA& gla) {
     if (roundNum % 2 == 1) {
-      //std::cout << "Performing row polish." << std::endl;
       RowPolish(task, gla);
     } else {
-      //std::cout << "Performing column polish." << std::endl;
       ColPolish(task, gla);
     }
   }
