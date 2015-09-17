@@ -32,9 +32,9 @@ class ConvergenceGLA {
     convergingThisRound = convergingThisRound && other.convergingThisRound;
   }
 
+  // TODO: Add better converging conditions
   bool ShouldIterate() {
-    bool done = (roundNum > 1) && convergingThisRound;
-    return !done;
+    return roundNum < 5;
   }
 };
 
@@ -100,7 +100,12 @@ class <?=$className?> {
     printf("Row polish with start %d and end %d has median value %d\n", start, end, medVal(0, 0));
     arma::Col<InnerType> med(matrix.n_cols);
     med.fill(medVal(0, 0));
-    matrix.submat(start, 0, end, matrix.n_cols - 1) - med.t();
+    matrix.submat(start, 0, end, matrix.n_cols - 1) -= med.t();
+    for (int i = start; i <= end; i++) {
+      for (int j = 0; j <= matrix.n_cols - 1; j++) {
+        printf("Entry %d, %d is %d\n", i, j, matrix(i, j));
+      }
+    }
   }
 
   void ColPolish(Task& task, cGLA& gla) {
@@ -111,7 +116,12 @@ class <?=$className?> {
     printf("Col polish with start %d and end %d has median value %d\n", start, end, medVal(0, 0));
     arma::Col<InnerType> med(matrix.n_rows);
     med.fill(medVal(0, 0));
-    matrix.submat(start, 0, end, matrix.n_cols - 1) - med.t();
+    matrix.submat(0, start, matrix.n_rows - 1, end) -= med;
+    for (int i = 0; i <= matrix.n_rows - 1; i++) {
+      for (int j = start; j <= end; j++) {
+        printf("Entry %d, %d is %d\n", i, j, matrix(i, j));
+      }
+    }
   }
 
  public:
