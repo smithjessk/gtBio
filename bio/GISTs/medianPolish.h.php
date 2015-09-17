@@ -5,6 +5,10 @@ function Median_Polish($t_args, $outputs, $states) {
     $matrixType = array_values($states)[0];
     $innerType = $matrixType->get('type');
     $shouldTranspose = get_default($t_args, 'shouldTranspose', False);
+    $fieldToAccess = get_default($t_args, 'fieldToAccess', '');
+    if ($fieldToAccess != '') {
+      $fieldToAccess = '.' + $fieldToAccess;
+    }
     $output = ['polished_matrix' => lookupType('bio::Variable_Matrix', 
       ['type' => $innerType])];
 
@@ -92,20 +96,11 @@ class <?=$className?> {
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.startIndex;
     int end = task.endIndex;
-    /*std::cout << "Num rows: " << temp.n_rows << std::endl;
-    std::cout << "Num cols: " << temp.n_cols << std::endl;
-    printf("Entries: %d, %d, %d, %d, %d", temp(0, 0), temp(0, 1), temp(0, 2), temp(0, 3), temp(0, 4));*/
     arma::Col<InnerType> medVal = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    printf("Row polish with start %d and end %d has median value %d\n", start, end, medVal(0, 0));
     arma::Col<InnerType> med(matrix.n_cols);
     med.fill(medVal(0, 0));
     matrix.submat(start, 0, end, matrix.n_cols - 1) -= med.t();
-    for (int i = start; i <= end; i++) {
-      for (int j = 0; j <= matrix.n_cols - 1; j++) {
-        printf("Entry %d, %d is %d\n", i, j, matrix(i, j));
-      }
-    }
   }
 
   void ColPolish(Task& task, cGLA& gla) {
@@ -113,15 +108,9 @@ class <?=$className?> {
     int end = task.endIndex;
     arma::Col<InnerType> medVal = 
       median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    printf("Col polish with start %d and end %d has median value %d\n", start, end, medVal(0, 0));
     arma::Col<InnerType> med(matrix.n_rows);
     med.fill(medVal(0, 0));
     matrix.submat(0, start, matrix.n_rows - 1, end) -= med;
-    for (int i = 0; i <= matrix.n_rows - 1; i++) {
-      for (int j = start; j <= end; j++) {
-        printf("Entry %d, %d is %d\n", i, j, matrix(i, j));
-      }
-    }
   }
 
  public:
@@ -129,9 +118,9 @@ class <?=$className?> {
 
 <? if ($shouldTranspose) { ?>
         std::cout << "Transposing matrix..." << std::endl;
-        matrix = <?=$matrix?>.GetMatrix().t();
+        matrix = <?=$matrix?>.GetMatrix()<?=$fieldToAccess?>.t();
 <? } else { ?>
-        matrix = <?=$matrix?>.GetMatrix();
+        matrix = <?=$matrix?>.GetMatrix()<?=$fieldToAccess?>;
 <? } ?> 
         roundNum = 0;
       }
