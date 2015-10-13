@@ -1,8 +1,13 @@
 RMA <- function(data, ...) {
   # For a reference, look at just.rma and rma_c_call in the affy package
-  # Background correction
+  data <- BackgroundCorrect(data, ...)
   # Group normalization (and the model stuff)
   # Median Polish
+}
+
+BackgroundCorrect <- function(data, ...) {
+  gla <- GLA(bio::Background_Correct, ...)
+  Aggregate(data, gla, ...)
 }
 
 MedianPolish <- function(outputs, states, ...) {
