@@ -123,7 +123,7 @@ class <?=$className?> {
         matrix = <?=$matrix?>.GetMatrix()<?=$fieldToAccess?>;
 <? } ?> 
         roundNum = 0;
-      }
+  }
 
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int numThreads) {

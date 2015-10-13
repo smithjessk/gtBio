@@ -5,9 +5,12 @@ RMA <- function(data, ...) {
   # Median Polish
 }
 
-BackgroundCorrect <- function(data, ...) {
-  gla <- GLA(bio::Background_Correct, ...)
-  Aggregate(data, gla, ...)
+BackgroundCorrect <- function(outputs, states, ...) {
+  outputs <- substitute(outputs)
+  check.atts(outputs)
+  outputs <- convert.atts(outputs)
+  gist <- GIST(bio::Background_Correct, ...)
+  Transition(gist, outputs, states)
 }
 
 MedianPolish <- function(outputs, states, ...) {
