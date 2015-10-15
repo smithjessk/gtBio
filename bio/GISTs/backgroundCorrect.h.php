@@ -67,7 +67,6 @@ class <?=$className?> {
 
     bool GetNextTask(Task& task) {
       bool ret = !finishedScheduling;
-      task.colIndex = threadIndex; // Also have numCols and numThreads
       finishedScheduling = true;
       return ret;
     }
@@ -108,7 +107,9 @@ class <?=$className?> {
 
   // If round number is odd, do a row polish. Otherwise, do a column polish.
   void DoStep(Task& task, cGLA& gla) {
-    // Here goes the equivalent call to rma_bg_correct and rma_bg_adjust
+    // Here go the equivalent calls to rma_bg_correct and rma_bg_adjust
+    // Note that this should mirror the code here 
+    // https://github.com/Bioconductor-mirror/preprocessCore/blob/master/src/rma_background4.c#L444
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {

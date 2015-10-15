@@ -2,9 +2,26 @@
 #define DENSITY_FUNCTIONS
 
 #include <armadillo>
-#include <math>
+#include <algorithm>
+#include <cmath>
 
 namespace gtBio {
+  /**
+   * Returns the max of x
+   * @param  x      Pointer to data vector
+   * @param  length Number of entries in vector
+   * @return        [description]
+   */
+  double find_max(double *x, int length) {
+    double max = x[0];
+    for (size_t i = 1; i < length; i++) {
+      if (x[i] > max){
+        max = x[i];
+      }
+    }
+    return max;
+  }
+
   /**
    * Compute the standard deviation of a data vector
    * @param  x      Data vector
@@ -12,7 +29,7 @@ namespace gtBio {
    * @return        The standard deviation of the vector
    * @source https://github.com/bmbolstad/RMAExpress/blob/master/Preprocess/weightedkerneldensity.c#L408
    */
-  double compute_sd(double *x, int length){
+  double compute_sd(double *x, int length) {
     int i;
     double sum = 0.0, sum2 = 0.0;
     for (i = 0; i < length; i++){
@@ -51,132 +68,6 @@ namespace gtBio {
       }
     }
     return (0.9 * lo * pow((double) length, -0.2));
-  }
-
-  /**
-   * Computes the kernel density in a memory efficient way
-   * @param row        Row j where j = column in question
-   * @param nxxx     Number of rows
-   * @param output   Memory allocated for dens_y
-   * @param output_x Memory allocated for dens_x
-   * @param numPoints     Number of points
-   * @source https://github.com/bmbolstad/RMAExpress/blob/master/Preprocess/weightedkerneldensity.c#L672
-   */
-  void KernelDensity_lowmem(double *row, int *nxxx, double *output, 
-    double *output_x, int *numPoints){
-
-    int numRows = *nxxx;
-    int n = *numPoints;
-    int i;
-    double low, high, iqr, bw, from, to;
-    double *kords = (double *) calloc(2*n, sizeof(double));
-    double *buffer = row; 
-    double *y = (double *) calloc(2*n, sizeof(double));
-    double *xords = (double *) calloc(n, sizeof(double));
-
-    // Sort the row
-    sort(buffer, buffer + numRows);
-    
-    // Get the smallest value, largest value, and the IQR
-    low  = buffer[0];
-    high = buffer[numRows-1];
-    iqr =  buffer[(int)(0.75 * numRows + 0.5)] - buffer[(int)(0.25 * numRows + 0.5)];
-
-    // Compute the bandwidth
-    bw = bandwidth(x, numRows, iqr);
-    
-    // Shift the low and high by the bandwidth
-    low = low - (7 * bw);
-    high = high + (7 * bw);  
-
-    // Set points [0, n] equal to i / (2n - 1)
-    for (i = 0; i <= n; i++){
-      kords[i] = (double)i/(double)(2*n -1)*2*(high - low);
-    }
-
-    // Set the second half of points equal to their opposite (on the opposite 
-    // side of the vector)
-    for (i = n+1; i < 2*n; i++){
-      kords[i] = -kords[2*n - i];
-    }
-
-    // Epanechnikov Kernel
-    double a = 0.0;
-    a = bw * sqrt(5.0);
-    for (i = 0; i < 2 * n; i++){
-      if (fabs(kords[i]) < a){
-        kords[i] = 3.0/(4.0 * a) * 
-          (1.0 - (fabs(kords[i]) / a)*  (fabs(kords[i]) / a));
-      } else {
-        kords[i] = 0.0;
-      }
-    }
-    unweighted_massdist(x, &numRows, &low, &high, y, &n);
-    fft_density_convolve(y,kords, 2 * n);
-
-    // Corrections to get into correct output range
-    to = high - 4 * bw;  
-    from = low + 4 * bw;
-
-    for (i = 0; i < n; i++){
-      xords[i] = (double)i/(double)(n -1)*(high - low)  + low;
-      output_x[i] = (double)i/(double)(n -1)*(to - from)  + from;
-    }
-
-    for (i =0; i < n; i++){
-      kords[i] = kords[i] / (2 * n);
-    }
-
-    // to get results that agree with R really need to do linear interpolation
-
-    linear_interpolate(xords, kords, output_x, output,n);
-    
-    free(xords);
-    free(y);
-    free(kords);
-  }
-
-  /**
-   * Find the maximum density in the matrix
-   * @param  data   Matrix of dimension rows * cols
-   * @param  column Column of interest
-   * @return        Maximum density found
-   * @source https://github.com/bmbolstad/preprocessCore/blob/master/src/rma_background4.c#L98
-   */
-  double find_max_density(double *z, size_t rows, size_t cols, size_t column) {
-    size_t i;
-    int numPoints = 16384;
-    double max_y, max_x;
-    double *dens_x; = malloc(numPoints * sizeof(double));
-    double *dens_y = malloc(numPoints * sizeof(double));
-    double *x = malloc(numRows * sizeof(double));
-
-    for (i = 0; i < numPoints; i++) {
-      dens_x[i] = 0;
-      dens_y[i] = 0;
-    }
-
-    for (i = 0; i < numRows; i++){
-      x[i] = z[column * numRows +i];
-    }
-  
-    kernel_density(x, numRows, dens_y, dens_x, npts);
-    max_y = find_max(dens_y, 16384);
-     
-    i = 0;
-    do {
-      if (dens_y[i] == max_y)
-        break;
-      i++;
-    } while(1);
-     
-    max_x = dens_x[i];
-
-    free(dens_x);
-    free(dens_y);
-    free(x);
-
-    return max_x;
   }
 
   /**
@@ -224,6 +115,43 @@ namespace gtBio {
   }
 
   /**
+   * Find twiddle factor for the FFT
+   * @param N       Length of data series
+   * @param i       TODO: Find description
+   * @param tf_real On output, contains real part of twiddle factor
+   * @param tf_imag On output, contains imaginary part of twiddle factor
+   * @source https://github.com/Bioconductor-mirror/preprocessCore/blob/40fbd94748a5ca7723f2ead9e590163eab6ec548/src/weightedkerneldensity.c#L176
+   */
+  void twiddle(int N, int i, double *tf_real, double *tf_imag){
+    double pi = 3.14159265358979323846; 
+    if (i ==0){
+      *tf_real = 1;
+      *tf_imag = 0;
+    } else {
+      *tf_real = cos(2*pi*(double)i/(double)N);  
+      *tf_imag = -sin(2*pi*(double)i/(double)N); 
+    }
+  }
+
+  /**
+   * Twiddle factor in FFT when computing inverse FFT
+   * @param N       Length of data series
+   * @param i       TODO: Update this
+   * @param tf_real On output, contains real part of twiddle factor
+   * @param tf_imag On output, contains imaginary part of twiddle factor
+   */
+  void twiddle2(int N, int i, double *tf_real, double *tf_imag) {
+    double pi = 3.14159265358979323846; 
+    if (i ==0){
+      *tf_real = 1;
+      *tf_imag = 0;
+     } else {
+      *tf_real = cos(2*pi*(double)i/(double)N);  
+      *tf_imag = sin(2*pi*(double)i/(double)N); 
+    }
+  } 
+
+  /**
    * Compute the FFT in place using Decimation in Frequency of a data sequence
    * of length 2^p. NOTE: Result is in reverse bit order.
    * @param f_real Real component of data series
@@ -247,15 +175,15 @@ namespace gtBio {
         for (k =0; k < Points2; k++) {
           even_real = f_real[BaseE + k] + f_real[BaseO + k]; 
           even_imag = f_imag[BaseE + k] + f_imag[BaseO + k];  
-          twiddle(Points,k,&tf_real, &tf_imag); 
-          odd_real = (f_real[BaseE+k]-f_real[BaseO+k])*tf_real - 
-            (f_imag[BaseE+k]-f_imag[BaseO+k])*tf_imag;
-          odd_imag = (f_real[BaseE+k]-f_real[BaseO+k])*tf_imag + 
-            (f_imag[BaseE+k]-f_imag[BaseO+k])*tf_real; 
-          f_real[BaseE+k] = even_real;
-          f_imag[BaseE+k] = even_imag;
-          f_real[BaseO+k] = odd_real;
-          f_imag[BaseO+k] = odd_imag;
+          twiddle(Points, k, &tf_real, &tf_imag); 
+          odd_real = (f_real[BaseE + k] - f_real[BaseO + k]) * tf_real - 
+            (f_imag[BaseE + k] - f_imag[BaseO + k]) * tf_imag;
+          odd_imag = (f_real[BaseE + k] - f_real[BaseO + k]) * tf_imag + 
+            (f_imag[BaseE + k] - f_imag[BaseO + k]) * tf_real; 
+          f_real[BaseE + k] = even_real;
+          f_imag[BaseE + k] = even_imag;
+          f_real[BaseO + k] = odd_real;
+          f_imag[BaseO + k] = odd_imag;
         } 
         BaseE = BaseE + Points;
       }                     
@@ -263,6 +191,35 @@ namespace gtBio {
       Points = Points >> 1;
     }
   }
+
+  void fft_ditI(double *f_real, double *f_imag, int p){
+    int i,j,k, Blocks, Points, Points2, BaseB, BaseT;
+    double top_real, top_imag, bot_real, bot_imag, tf_real, tf_imag;
+
+    Blocks = 1 << (p-1);
+    Points = 2;  
+    for (i=0; i < p; i++){
+      Points2 = Points >> 1;
+      BaseT = 0;
+      for (j=0; j < Blocks; j++){
+        BaseB = BaseT+Points2;
+        for (k=0; k < Points2; k++){
+          top_real = f_real[BaseT+k];
+          top_imag = f_imag[BaseT+k]; 
+          twiddle2(Points,k,&tf_real, &tf_imag);
+          bot_real = f_real[BaseB+k]*tf_real - f_imag[BaseB+k]*tf_imag;
+          bot_imag = f_real[BaseB+k]*tf_imag + f_imag[BaseB+k]*tf_real;
+          f_real[BaseT+k] = top_real + bot_real;
+          f_imag[BaseT+k] = top_imag + bot_imag;
+          f_real[BaseB+k] = top_real - bot_real;   
+          f_imag[BaseB+k] = top_imag - bot_imag; 
+        }     
+        BaseT= BaseT + Points; 
+      }
+      Blocks = Blocks >> 1;
+      Points = Points << 1;
+    }
+  } 
 
   /**
    * TODO: Update this
@@ -281,7 +238,7 @@ namespace gtBio {
     double *conv_imag = (double *)calloc(n,sizeof(double));
 
     fft_dif(y, y_imag, nlog2);
-    fft_dif(kords,kords_imag,nlog2);
+    fft_dif(kords, kords_imag, nlog2);
     
     for (i=0; i < n; i++){
       conv_real[i] = y[i]*kords[i] + y_imag[i]*kords_imag[i];
@@ -344,6 +301,217 @@ namespace gtBio {
     for(int i = 0 ; i < length; i++) {
       yout[i] = linear_interpolate_helper(xout[i], x, y, length);
     }
+  }
+
+  /**
+   * Computes the kernel density in a memory efficient way
+   * @param row        Row j where j = column in question
+   * @param nxxx     Number of rows
+   * @param output   Memory allocated for dens_y
+   * @param output_x Memory allocated for dens_x
+   * @param numPoints     Number of points
+   * @source https://github.com/bmbolstad/RMAExpress/blob/master/Preprocess/weightedkerneldensity.c#L672
+   */
+  void kernel_density(double *row, int *nxxx, double *output, 
+    double *output_x, int *numPoints){
+
+    int numRows = *nxxx;
+    int n = *numPoints;
+    int i;
+    double low, high, iqr, bw, from, to;
+    double *kords = (double *) calloc(2*n, sizeof(double));
+    double *buffer = row; 
+    double *y = (double *) calloc(2*n, sizeof(double));
+    double *xords = (double *) calloc(n, sizeof(double));
+
+    // Sort the row
+    std::sort(buffer, buffer + numRows);
+    
+    // Get the smallest value, largest value, and the IQR
+    low  = buffer[0];
+    high = buffer[numRows-1];
+    iqr =  buffer[(int)(0.75 * numRows + 0.5)] - buffer[(int)(0.25 * numRows + 0.5)];
+
+    // Compute the bandwidth
+    bw = bandwidth(row, numRows, iqr);
+    
+    // Shift the low and high by the bandwidth
+    low = low - (7 * bw);
+    high = high + (7 * bw);  
+
+    // Set points [0, n] equal to i / (2n - 1)
+    for (i = 0; i <= n; i++){
+      kords[i] = (double)i/(double)(2*n -1)*2*(high - low);
+    }
+
+    // Set the second half of points equal to their opposite (on the opposite 
+    // side of the vector)
+    for (i = n+1; i < 2*n; i++){
+      kords[i] = -kords[2*n - i];
+    }
+
+    // Epanechnikov Kernel
+    double a = bw * sqrt(5.0);
+    for (i = 0; i < 2 * n; i++){
+      if (fabs(kords[i]) < a){
+        kords[i] = 3.0/(4.0 * a) * 
+          (1.0 - (fabs(kords[i]) / a)*  (fabs(kords[i]) / a));
+      } else {
+        kords[i] = 0.0;
+      }
+    }
+
+    unweighted_massdist(row, &numRows, &low, &high, y, &n);
+    fft_density_convolve(y, kords, 2 * n);
+
+    // Corrections to get into correct output range
+    to = high - 4 * bw;  
+    from = low + 4 * bw;
+
+    for (i = 0; i < n; i++){
+      xords[i] = (double)i/(double)(n -1)*(high - low)  + low;
+      output_x[i] = (double)i/(double)(n -1)*(to - from)  + from;
+    }
+
+    for (i =0; i < n; i++){
+      kords[i] = kords[i] / (2 * n);
+    }
+
+    // to get results that agree with R really need to do linear interpolation
+
+    linear_interpolate(xords, kords, output_x, output,n);
+    free(xords);
+    free(y);
+    free(kords);
+  }
+
+  /**
+   * Find the maximum density in the matrix
+   * @param  data   Matrix of dimension rows * cols
+   * @param  column Column of interest
+   * @return        Maximum density found
+   * @source https://github.com/bmbolstad/preprocessCore/blob/master/src/rma_background4.c#L98
+   */
+  double max_density(double *z, size_t rows, size_t cols, size_t column) {
+    size_t i;
+    int numPoints = 16384;
+    double max_y, max_x;
+    double *dens_x = (double*) malloc(numPoints * sizeof(double));
+    double *dens_y = (double*) malloc(numPoints * sizeof(double));
+    double *x = (double*) malloc(rows * sizeof(double));
+
+    for (i = 0; i < numPoints; i++) {
+      dens_x[i] = 0;
+      dens_y[i] = 0;
+    }
+
+    for (i = 0; i < rows; i++){
+      x[i] = z[column * rows +i];
+    }
+  
+    kernel_density(x, (int*) &rows, dens_y, dens_x, &numPoints);
+    max_y = find_max(dens_y, 16384);
+     
+    i = 0;
+    do {
+      if (dens_y[i] == max_y)
+        break;
+      i++;
+    } while(1);
+     
+    max_x = dens_x[i];
+
+    free(dens_x);
+    free(dens_y);
+    free(x);
+
+    return max_x;
+  }
+
+  /**
+   * Estimate the sigma parameter for PM
+   * @param  PM     Perfect Match Matrix
+   * @param  PMmax  Mode for PMs for column
+   * @param  rows   Number of rows
+   * @param  cols   Number of columns
+   * @param  column Column of interest
+   * @return        Standard deviation for column
+   * @source https://github.com/bmbolstad/preprocessCore/blob/master/src/rma_background4.c#L159
+   */
+  double get_sd(double *PM, double PMmax, int rows, int cols, int column) {
+    double sigma;
+    double tmpsum = 0.0;
+    int numtop = 0;
+    for (size_t i = 0; i < rows; i++) {
+      if (PM[column*rows + i] < PMmax) {
+        tmpsum += (PM[column * rows + i] - PMmax) * 
+          (PM[column * rows + i] - PMmax);
+        numtop++;
+      }
+    }
+    sigma = sqrt(tmpsum/(numtop -1))*sqrt(2.0)/0.85;
+    return sigma;
+  }
+
+  /**
+   * Estimate the alpha parameter
+   * @param  PM     Perfect Match Matrix. This is probably where to start...
+   * @param  PMmax  Value of maximum density of PM
+   * @param  length Number of entries
+   * @return        Alpha parameter 
+   */
+  double get_alpha(double *PM, double PMmax, int length) {
+    for (size_t i = 0; i < length; i++){
+      PM[i] = PM[i] - PMmax;
+    }
+    return 1.0 / max_density(PM, length, 1, 0);
+  }
+
+  /**
+   * Estimate the parameters for the background.
+   * @param PM     Perfect match probes matrix
+   * @param param  The parameters. param[0] = alpha, param[1] = mu, 
+   *               param[2] = sigma
+   * @param rows   Number of rows
+   * @param cols   Number of columns
+   * @param column Index of the column we're currently operating on
+   * @source https://github.com/Bioconductor-mirror/preprocessCore/blob/master/src/rma_background4.c#L216
+   */
+  void rma_bg_parameters(double *PM, double *param, size_t rows, size_t cols, 
+    size_t column) {
+
+    double PMmax, sd, alpha;
+    int n_less = 0, n_more = 0;
+    double *tmp_less = (double *) calloc(rows, sizeof(double)); // Was Calloc
+    double *tmp_more = (double *) calloc(rows, sizeof(double)); // Was Calloc
+    size_t i = 0;
+    
+    PMmax = max_density(PM, rows, cols, column);
+    
+    for (size_t i = 0; i < rows; i++) {
+      if (PM[column*rows + i] < PMmax) {
+        tmp_less[n_less] = PM[column*rows + i];
+        n_less++;
+      }
+    }
+
+    PMmax = max_density(tmp_less, n_less, 1, 0);
+    sd = get_sd(PM, PMmax, rows, cols, column) * 0.85; 
+
+    for (size_t i = 0; i < rows; i++) {
+      if (PM[column*rows + i] > PMmax) {
+        tmp_more[n_more] = PM[column*rows + i];
+        n_more++;
+      }
+    }
+
+    /* the 0.85 is to fix up constant in above */
+    alpha = get_alpha(tmp_more, PMmax, n_more);
+    param[0] = alpha;
+    param[1] = PMmax;
+    param[2] = sd;
+    free(tmp_less);
+    free(tmp_more);
   }
 }
 
