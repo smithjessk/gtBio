@@ -4,8 +4,28 @@
 #include <armadillo>
 #include <algorithm>
 #include <cmath>
+#include "pnorm.c"
 
 namespace gtBio {
+  /**
+   * Compute the standard normal density
+   * @param  x Value to compute phi of
+   * @return   The standard normal density evaluated at x
+   */
+  double phi(double x) {
+    return dnorm4(x, 0.0, 1.0, 0);
+  }
+
+  /**
+   * Compute the standard normal distribution function
+   * @param  x Value to compute Phi of
+   * @return   The standard normal distr. func. evaluated at x
+   * @source https://github.com/bmbolstad/preprocessCore/blob/master/src/rma_background4.c#L270
+   */
+  double Phi(double x) {
+    return pnorm5(x, 0.0, 1.0, 1,0);
+  }
+
   /**
    * Returns the max of x
    * @param  x      Pointer to data vector
@@ -512,6 +532,23 @@ namespace gtBio {
     param[2] = sd;
     free(tmp_less);
     free(tmp_more);
+  }
+
+  /**
+   * Adjust the values in the perfect match probe matrix.
+   * @param PM     Matrix of perfect match probes' intensity values
+   * @param param  param[0] = alpha, param[1] = mu, param[2] = sigma
+   * @param rows   Number of rows
+   * @param cols   Number of columns
+   * @param column Which column to adjust
+   * @source https://github.com/bmbolstad/preprocessCore/blob/master/src/rma_background4.c#L300
+   */
+  void rma_bg_adjust(double *PM, double *param, size_t rows, size_t cols, size_t column){
+    double a;
+    for (size_t i = 0; i < rows; i++) {
+      a = PM[column*rows + i] - param[1] - param[0]*param[2]*param[2]; 
+      PM[column*rows + i] = a + param[2] * phi(a/param[2])/Phi(a/param[2]);
+    }
   }
 }
 
