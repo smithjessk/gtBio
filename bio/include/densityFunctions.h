@@ -4,6 +4,7 @@
 #include <armadillo>
 #include <algorithm>
 #include <cmath>
+#include "dnorm.c"
 #include "pnorm.c"
 
 namespace gtBio {

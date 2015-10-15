@@ -16,13 +16,19 @@ function Background_Correct(array $t_args, array $inputs, array $outputs) {
       'kind' => 'GIST',
       'name' => $className,
       'system_headers' => ['armadillo', 'algorithm'],
-      'libraries'     => ['armadillo'],
-      'user_headers'    => ['densityFunctions.h'],
+      'libraries'     => ['armadillo', 'preprocessCore'],
+      'user_headers'    => [],
       'iterable' => true,
       'output'          => $output,
       'result_type'     => 'single',
   ];
 ?>
+
+// Found in preprocessCore
+extern void rma_bg_parameters(double *PM,double *param, size_t rows, 
+  size_t cols, size_t column);
+extern void rma_bg_adjust(double *PM, double *param, size_t rows, size_t cols, 
+  size_t column);
 
 class ConvergenceGLA {
  public:
@@ -67,6 +73,7 @@ class <?=$className?> {
 
     bool GetNextTask(Task& task) {
       bool ret = !finishedScheduling;
+      // task.colIndex = threadIndex;
       finishedScheduling = true;
       return ret;
     }
@@ -105,7 +112,6 @@ class <?=$className?> {
     }
   }
 
-  // If round number is odd, do a row polish. Otherwise, do a column polish.
   void DoStep(Task& task, cGLA& gla) {
     // Here go the equivalent calls to rma_bg_correct and rma_bg_adjust
     // Note that this should mirror the code here 
