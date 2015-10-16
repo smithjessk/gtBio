@@ -99,7 +99,7 @@ class <?=$className?> {
         roundNum = 0;
   }
 
-  void PrepareRound(WorkUnits& workers, int numThreads) {
+  void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     roundNum++;
     this->numThreads = matrix.n_cols;
     std::cout << "Beginning round " << roundNum << " with " << this->numThreads
