@@ -20,6 +20,7 @@ function Median_Polish($t_args, $outputs, $states) {
         'iterable'      => true,
         'output'        => $output,
         'result_type'   => 'single',
+        'extras'          => $matrix_type->extras(),
     ];
 ?>
 

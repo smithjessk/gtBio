@@ -21,6 +21,7 @@ function Background_Correct($t_args, $outputs, $states) {
       'iterable' => false,
       'output'          => $output,
       'result_type'     => 'single',
+      'extras'          => $matrix_type->extras(),
   ];
 ?>
 
