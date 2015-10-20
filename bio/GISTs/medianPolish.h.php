@@ -2,13 +2,13 @@
 function Median_Polish($t_args, $outputs, $states) {
     $class_name = generate_name('Median_Polish');
     $matrix = array_keys($states)[0];
-    $matrix_type = array_values($states)[0];
-    $inner_type = $matrix_type->get('type');
-    $should_transpose = get_default($t_args, 'should_transpose', False);
     $field_to_access = get_default($t_args, 'field_to_access', '');
     if ($field_to_access != '') {
       $field_to_access = '.' + $field_to_access;
     }
+    $matrix_type = array_values($states)[0];
+    $inner_type = $matrix_type->get('type');
+    $should_transpose = get_default($t_args, 'should_transpose', False);
     $output = ['polished_matrix' => lookupType('bio::Variable_Matrix', 
       ['type' => $inner_type])];
 

@@ -2,10 +2,13 @@
 function Background_Correct($t_args, $outputs, $states) {
   $class_name = generate_name('Background_Correct');
   $matrix = array_keys($states)[0];
-  $matrix_type = array_values($states)[0];
+  $field_to_access = get_default($t_args, 'field_to_access', '');
+  if ($field_to_access != '') {
+    $field_to_access = 'Q1__' . $field_to_access;
+  }
+  $matrix_type = array_values($states)[0]->output()[$field_to_access];
   $inner_type = $matrix_type->get('type');
   $should_transpose = get_default($t_args, 'should_transpose', False);
-  $field_to_access = get_default($t_args, 'field_to_access', '');
   if ($field_to_access != '') {
     $field_to_access = '.' + $field_to_access;
   }
@@ -48,7 +51,7 @@ class <?=$class_name?> {
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
   using InnerType = <?=$inner_type?>;
-  using Matrix = <?=$matrix_type?>::Matrix;
+  using Matrix = <?=$matrix_type?>;
   using cGLA = ConvergenceGLA;
 
   struct Task {
@@ -90,12 +93,20 @@ class <?=$class_name?> {
   <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
 
 <? if ($should_transpose) { ?>
-        std::cout << "Transposing matrix..." << std::endl;
-        matrix = <?=$matrix?>.GetMatrix()<?=$field_to_access?>.t();
+    std::cout << "Transposing matrix..." << std::endl;
+    <? if ($field_to_access != '') { ?> 
+        matrix = std::get<0>(<?=$matrix?>.GetList()[0]).<?=$field_to_access?>.t();
+    <? } else { ?>
+        matrix = std::get<0>(<?=$matrix?>.GetList()[0]).t();
+    <? } ?>
 <? } else { ?>
-        matrix = <?=$matrix?>.GetMatrix()<?=$field_to_access?>;
+    <? if ($field_to_access != '') { ?> 
+        matrix = std::get<0>(<?=$matrix?>.GetList()[0]).<?=$field_to_access?>;
+    <? } else { ?>
+        matrix = std::get<0>(<?=$matrix?>.GetList()[0]);
+    <? } ?>
 <? } ?> 
-        round_num = 0;
+    round_num = 0;
   }
 
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
