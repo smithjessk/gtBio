@@ -1,5 +1,5 @@
 <?
-function Background_Correct(array $t_args, array $inputs, array $outputs) {
+function Background_Correct($t_args, $outputs, $states) {
   $class_name = generate_name('Background_Correct');
   $matrix = array_keys($states)[0];
   $matrix_type = array_values($states)[0];
@@ -35,6 +35,11 @@ class ConvergenceGLA {
   ConvergenceGLA() {}
 
   void AddState(ConvergenceGLA other) {}
+
+  // Required by grokit
+  bool ShouldIterate() {
+    return false;
+  }
 };
 
 class <?=$class_name?> {
@@ -94,7 +99,8 @@ class <?=$class_name?> {
 
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
-    this->num_threads = std::min(matrix.n_cols, suggested_num_workers);
+    arma::uword n_cols = matrix.n_cols;
+    this->num_threads = std::min((int) n_cols, suggested_num_workers);
     std::cout << "Beginning round " << round_num << " with " << this->num_threads
       << " workers." << std::endl;
     std::pair<LocalScheduler*, cGLA*> worker;
@@ -108,17 +114,17 @@ class <?=$class_name?> {
   // TODO: How to extract a pointer to the data? 
   void DoStep(Task& task, cGLA& gla) {
     matrix = matrix.t();
-    double *params = malloc(3 * sizeof(double));
-    rma_bg_parameters(matrix.memptr(), params, matrix.n_rows, matrix.n_cols, 
-      (size_t) task.col_index);
-    rma_bg_adjust(matrix.memptr(), params, matrix.n_rows, matrix.n_cols, 
-      (size_t) task.col_index);
+    double *params = (double *) malloc(3 * sizeof(double));
+    rma_bg_parameters((double *) matrix.memptr(), params, matrix.n_rows, 
+      matrix.n_cols, (size_t) task.col_index);
+    rma_bg_adjust((double *) matrix.memptr(), params, matrix.n_rows, 
+      matrix.n_cols, (size_t) task.col_index);
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
     corrected_matrix = matrix.t();
   }
-}
+};
 
 <?
     return $identifier;
