@@ -9,7 +9,7 @@ function Median_Polish($t_args, $outputs, $states) {
     $matrix_type = array_values($states)[0];
     $inner_type = $matrix_type->get('type');
     $should_transpose = get_default($t_args, 'should_transpose', False);
-    $output = ['polished_matrix' => lookupType('bio::Variable_Matrix', 
+    $output = ['polished_matrix' => lookupType('statistics::Variable_Matrix', 
       ['type' => $inner_type])];
 
     $identifier = [

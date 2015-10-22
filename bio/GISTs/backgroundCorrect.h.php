@@ -12,7 +12,7 @@ function Background_Correct($t_args, $outputs, $states) {
   if ($field_to_access != '') {
     $field_to_access = '.' + $field_to_access;
   }
-  $output = ['corrected_matrix' => lookupType('bio::Variable_Matrix', 
+  $output = ['corrected_matrix' => lookupType('statistics::Variable_Matrix', 
       ['type' => $inner_type])];
   
   $identifier = [

@@ -1,9 +1,9 @@
 ReadCEL <- function(paths, outputs, ...) {
   if (missing(outputs)) {
     outputs <- list(
-      Intensity = TYPE(bio::VariableMatrix, type = TYPE(base::float)), 
-      StdDev = TYPE(bio::VariableMatrix, type = TYPE(base::float)),
-      Pixels = TYPE(bio::VariableMatrix, type = TYPE(base::int)))
+      Intensity = TYPE(statistics::VariableMatrix, type = TYPE(base::float)), 
+      StdDev = TYPE(statistics::VariableMatrix, type = TYPE(base::float)),
+      Pixels = TYPE(statistics::VariableMatrix, type = TYPE(base::int)))
   }
   alias <- create.alias("read")
   gi <- GI(bio::CELFileReader)
