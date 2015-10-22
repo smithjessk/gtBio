@@ -28,9 +28,9 @@ function Background_Correct($t_args, $outputs, $states) {
 ?>
 
 // Found in preprocessCore
-extern void rma_bg_parameters(double *PM, double *param, size_t rows, 
+extern "C" void rma_bg_parameters(double *PM, double *param, size_t rows, 
   size_t cols, size_t column);
-extern void rma_bg_adjust(double *PM, double *param, size_t rows, size_t cols, 
+extern "C" void rma_bg_adjust(double *PM, double *param, size_t rows, size_t cols, 
   size_t column);
 
 class <?=$cgla_name?> {
