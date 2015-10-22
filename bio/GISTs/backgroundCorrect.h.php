@@ -4,12 +4,8 @@ function Background_Correct($t_args, $outputs, $states) {
   $cgla_name = generate_name('ConvergenceGLA');
   $matrix = array_keys($states)[0];
   $field_to_access = get_default($t_args, 'field_to_access', '');
-  #fprintf(STDERR, "field_to_access = ".$field_to_access."\n");
-  #fprintf(STDERR, print_r(array_values($states)[0]->output()));
   $matrix_type = array_values($states)[0]->output()[$field_to_access];
-  #fprintf(STDERR, "matrix_type = ".$matrix_type."\n");
   $inner_type = $matrix_type->get('type');
-  #fprintf(STDERR, "inner_type = ".$inner_type."\n");
   $should_transpose = get_default($t_args, 'should_transpose', False);
   if ($field_to_access != '') {
     $field_to_access = '.' + $field_to_access;
