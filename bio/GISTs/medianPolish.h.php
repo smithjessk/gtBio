@@ -1,6 +1,7 @@
 <?
 function Median_Polish($t_args, $outputs, $states) {
     $class_name = generate_name('Median_Polish');
+    $cgla_name = generate_name('ConvergenceGLA');
     $matrix = array_keys($states)[0];
     $field_to_access = get_default($t_args, 'field_to_access', '');
     if ($field_to_access != '') {
@@ -20,20 +21,21 @@ function Median_Polish($t_args, $outputs, $states) {
         'iterable'      => true,
         'output'        => $output,
         'result_type'   => 'single',
+        'properties'      => ['matrix'],
         'extras'          => $matrix_type->extras(),
     ];
 ?>
 
-class ConvergenceGLA {
+class <?=$cgla_name?> {
  public:
   int round_num;
   bool converging_this_round;
 
-  ConvergenceGLA(int num) :
+  <?=$cgla_name?>(int num) :
       round_num(num),
       converging_this_round(true) {}
 
-  void AddState(ConvergenceGLA other) {
+  void AddState(<?=$cgla_name?> other) {
     converging_this_round = converging_this_round && 
       other.converging_this_round;
   }
@@ -48,9 +50,9 @@ class <?=$class_name?> {
  public:
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
-  using InnerType = <?=$inner_type?>;
+  using Inner = <?=$inner_type?>;
   using Matrix = <?=$matrix_type?>::Matrix;
-  using cGLA = ConvergenceGLA;
+  using cGLA = <?=$cgla_name?>;
 
   struct Task {
     long start_index; // Which row or column this local scheduler starts at
@@ -99,9 +101,9 @@ class <?=$class_name?> {
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.start_index;
     int end = task.end_index;
-    arma::Col<InnerType> med_val = 
+    arma::Col<Inner> med_val = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    arma::Col<InnerType> med(matrix.n_cols);
+    arma::Col<Inner> med(matrix.n_cols);
     med.fill(med_val(0, 0));
     matrix.submat(start, 0, end, matrix.n_cols - 1) -= med.t();
   }
@@ -109,9 +111,9 @@ class <?=$class_name?> {
   void ColPolish(Task& task, cGLA& gla) {
     int start = task.start_index;
     int end = task.end_index;
-    arma::Col<InnerType> med_val = 
+    arma::Col<Inner> med_val = 
       median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    arma::Col<InnerType> med(matrix.n_rows);
+    arma::Col<Inner> med(matrix.n_rows);
     med.fill(med_val(0, 0));
     matrix.submat(0, start, matrix.n_rows - 1, end) -= med;
   }
@@ -121,9 +123,17 @@ class <?=$class_name?> {
 
 <? if ($should_transpose) { ?>
         std::cout << "Transposing matrix..." << std::endl;
-        matrix = <?=$matrix?>.GetMatrix()<?=$field_to_access?>.t();
+        <? if ($field_to_access != '') { ?> 
+          matrix = <?=$matrix?>.GetMatrix().<?=$field_to_access?>.t();
+        <? } else { ?>
+          matrix = <?=$matrix?>.GetMatrix().t();
+        <? } ?>
 <? } else { ?>
-        matrix = <?=$matrix?>.GetMatrix()<?=$field_to_access?>;
+        <? if ($field_to_access != '') { ?> 
+          matrix = <?=$matrix?>.GetMatrix().<?=$field_to_access?>;
+        <? } else { ?>
+          matrix = <?=$matrix?>.GetMatrix();
+        <? } ?>
 <? } ?> 
         round_num = 0;
   }
@@ -155,7 +165,19 @@ class <?=$class_name?> {
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
-    polished_matrix = matrix;
+    <? if ($should_transpose) { ?>
+      polished_matrix = matrix.t();
+    <? } else { ?>
+      polished_matrix = matrix;
+    <? } ?>
+  }
+
+  inline const Matrix& GetMatrix() const {
+    <? if ($should_transpose) { ?>
+      return matrix.t();
+    <? } else { ?>
+      return matrix;
+    <? } ?>
   }
 };
 

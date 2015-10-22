@@ -1,13 +1,15 @@
 <?
 function Background_Correct($t_args, $outputs, $states) {
   $class_name = generate_name('Background_Correct');
+  $cgla_name = generate_name('ConvergenceGLA');
   $matrix = array_keys($states)[0];
   $field_to_access = get_default($t_args, 'field_to_access', '');
-  if ($field_to_access != '') {
-    $field_to_access = 'Q1__' . $field_to_access;
-  }
+  #fprintf(STDERR, "field_to_access = ".$field_to_access."\n");
+  #fprintf(STDERR, print_r(array_values($states)[0]->output()));
   $matrix_type = array_values($states)[0]->output()[$field_to_access];
+  #fprintf(STDERR, "matrix_type = ".$matrix_type."\n");
   $inner_type = $matrix_type->get('type');
+  #fprintf(STDERR, "inner_type = ".$inner_type."\n");
   $should_transpose = get_default($t_args, 'should_transpose', False);
   if ($field_to_access != '') {
     $field_to_access = '.' + $field_to_access;
@@ -24,6 +26,7 @@ function Background_Correct($t_args, $outputs, $states) {
       'iterable' => false,
       'output'          => $output,
       'result_type'     => 'single',
+      'properties'      => ['matrix'],
       'extras'          => $matrix_type->extras(),
   ];
 ?>
@@ -34,11 +37,11 @@ extern void rma_bg_parameters(double *PM, double *param, size_t rows,
 extern void rma_bg_adjust(double *PM, double *param, size_t rows, size_t cols, 
   size_t column);
 
-class ConvergenceGLA {
+class <?=$cgla_name?> {
  public:
-  ConvergenceGLA() {}
+  <?=$cgla_name?>() {}
 
-  void AddState(ConvergenceGLA other) {}
+  void AddState(<?=$cgla_name?> other) {}
 
   // Required by grokit
   bool ShouldIterate() {
@@ -50,9 +53,9 @@ class <?=$class_name?> {
  public:
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
-  using InnerType = <?=$inner_type?>;
+  using Inner = <?=$inner_type?>;
   using Matrix = <?=$matrix_type?>;
-  using cGLA = ConvergenceGLA;
+  using cGLA = <?=$cgla_name?>;
 
   struct Task {
     long col_index;
@@ -134,7 +137,19 @@ class <?=$class_name?> {
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
-    corrected_matrix = matrix.t();
+    <? if ($should_transpose) { ?>
+      corrected_matrix = matrix.t();
+    <? } else { ?>
+      corrected_matrix = matrix;
+    <? } ?>
+  }
+
+  inline const Matrix& GetMatrix() const {
+    <? if ($should_transpose) { ?>
+      return matrix.t();
+    <? } else { ?>
+      return matrix;
+    <? } ?>
   }
 };
 

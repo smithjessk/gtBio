@@ -6,5 +6,5 @@ data <- ReadCEL(c(f))
 state <- Gather(data)
 normalizedMatrix <- BackgroundCorrect(states = state, 
   outputs = c(normalized = Matrix), shouldTranspose = FALSE, 
-  field_to_access = "Intensity")
+  field_to_access = "Q1__Intensity")
 x <- View(normalizedMatrix)
