@@ -4,12 +4,19 @@ function Background_Correct($t_args, $outputs, $states) {
   $cgla_name = generate_name('ConvergenceGLA');
   $matrix = array_keys($states)[0];
   $field_to_access = get_default($t_args, 'field_to_access', '');
+
+  $from_matrix = get_default($t_args, 'from_matrix', False);
+  $matrix_grabber = $from_matrix ? 
+    $matrix.'.GetMatrix()' : 
+    'std::get<0>('.$matrix.'.GetList()[0])';
   $matrix_type = array_values($states)[0]->output()[$field_to_access];
   $inner_type = $matrix_type->get('type');
   $should_transpose = get_default($t_args, 'should_transpose', False);
+
   if ($field_to_access != '') {
     $field_to_access = '.' + $field_to_access;
   }
+
   $output = ['corrected_matrix' => lookupType('statistics::Variable_Matrix', 
       ['type' => $inner_type])];
   
@@ -54,7 +61,8 @@ class <?=$class_name?> {
   using cGLA = <?=$cgla_name?>;
 
   struct Task {
-    long col_index;
+    long start_index; // Which column this local scheduler starts at
+    long end_index; // Which column it ends at. Inclusive bound.
   };
 
   struct LocalScheduler {
@@ -74,7 +82,8 @@ class <?=$class_name?> {
 
     bool GetNextTask(Task& task) {
       bool ret = !finished_scheduling;
-      // task.col_index = thread_index;
+      task.start_index = thread_index * matrix.n_cols / num_threads;
+      task.end_index = (thread_index + 1) * matrix.n_cols / num_threads - 1;
       finished_scheduling = true;
       return ret;
     }
@@ -94,15 +103,15 @@ class <?=$class_name?> {
 <? if ($should_transpose) { ?>
     std::cout << "Transposing matrix..." << std::endl;
     <? if ($field_to_access != '') { ?> 
-        matrix = std::get<0>(<?=$matrix?>.GetList()[0]).<?=$field_to_access?>.t();
+        matrix = <?=$matrix_grabber?>.<?=$field_to_access?>.t();
     <? } else { ?>
-        matrix = std::get<0>(<?=$matrix?>.GetList()[0]).t();
+        matrix = <?=$matrix_grabber?>.t();
     <? } ?>
 <? } else { ?>
     <? if ($field_to_access != '') { ?> 
-        matrix = std::get<0>(<?=$matrix?>.GetList()[0]).<?=$field_to_access?>;
+        matrix = <?=$matrix_grabber?>.<?=$field_to_access?>;
     <? } else { ?>
-        matrix = std::get<0>(<?=$matrix?>.GetList()[0]);
+        matrix = <?=$matrix_grabber?>;
     <? } ?>
 <? } ?> 
     round_num = 0;
@@ -112,24 +121,38 @@ class <?=$class_name?> {
     round_num++;
     arma::uword n_cols = matrix.n_cols;
     this->num_threads = std::min((int) n_cols, suggested_num_workers);
-    std::cout << "Beginning round " << round_num << " with " << this->num_threads
-      << " workers." << std::endl;
+    std::printf("Beginning round %d with %d workers.\n", round_num, 
+      this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
     for (int counter = 0; counter < this->num_threads; counter++) {
       worker = std::make_pair(new LocalScheduler(counter, round_num, 
         this->num_threads, matrix), new cGLA());
-      workers.push_back(worker);
+      workers.push_back(worker); 
     }
+    // Necessary because Armadillo stores column-by-column but the linked RMA
+    // functions expect row-stored values
+    // TODO: Extract perfect match probes
+    std::printf("Before transposing, (num_rows, num_cols) = (%d, %d)\n",
+      matrix.n_rows, matrix.n_cols);
+    matrix = matrix.t(); // Possibly taken care of by Collect?
+    std::printf("After transposing, (num_rows, num_cols) = (%d, %d)\n",
+      matrix.n_rows, matrix.n_cols);
   }
 
   // TODO: How to extract a pointer to the data? 
   void DoStep(Task& task, cGLA& gla) {
-    matrix = matrix.t();
     double *params = (double *) malloc(3 * sizeof(double));
-    rma_bg_parameters((double *) matrix.memptr(), params, matrix.n_rows, 
-      matrix.n_cols, (size_t) task.col_index);
-    rma_bg_adjust((double *) matrix.memptr(), params, matrix.n_rows, 
-      matrix.n_cols, (size_t) task.col_index);
+    std::printf("This might be it: start_index = %ld, end_index = %ld\n", 
+      task.start_index, task.end_index);
+    std::printf("What a time to be alive: %d\n", *(matrix.memptr() + 1));
+    for (size_t i = task.start_index; i <= task.end_index; i++) {
+      rma_bg_parameters((double *) matrix.memptr(), params, matrix.n_rows, 
+        matrix.n_cols, i);
+      std::printf("finished\n");
+      rma_bg_adjust((double *) matrix.memptr(), params, matrix.n_rows, 
+        matrix.n_cols, i);
+    }
+    std::printf("still alive\n");
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {

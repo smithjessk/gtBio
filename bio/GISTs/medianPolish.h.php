@@ -56,7 +56,7 @@ class <?=$class_name?> {
 
   struct Task {
     long start_index; // Which row or column this local scheduler starts at
-    long end_index; // Which row/col it ends at. Inclusive bound.
+    long end_index; // Which row or column it ends at. Inclusive bound.
   };
 
   struct LocalScheduler {
@@ -145,8 +145,8 @@ class <?=$class_name?> {
     arma::uword n_cols = matrix.n_cols;
     int min_dimension = std::min(n_rows, n_cols);
     this->num_threads = std::min(min_dimension, suggested_num_workers);
-    std::cout << "Beginning round " << round_num << " with " 
-      << this->num_threads << " workers." << std::endl;
+    std::printf("Beginning round %d with %d workers.\n", round_num, 
+      this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
     for (int counter = 0; counter < this->num_threads; counter++) {
       worker = std::make_pair(new LocalScheduler(counter, round_num, 
