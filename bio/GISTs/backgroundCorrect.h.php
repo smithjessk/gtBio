@@ -96,10 +96,10 @@ class <?=$class_name?> {
   int round_num;
   int num_threads;
   Matrix matrix;
+  arma::mat matrix_as_doubles;
 
  public:
   <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
-
 <? if ($should_transpose) { ?>
     std::cout << "Transposing matrix..." << std::endl;
     <? if ($field_to_access != '') { ?> 
@@ -115,8 +115,10 @@ class <?=$class_name?> {
     <? } ?>
 <? } ?> 
     round_num = 0;
+    matrix_as_doubles = arma::conv_to<arma::mat>::from(matrix);
   }
 
+  // TODO: Extract perfect match probes
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
     arma::uword n_cols = matrix.n_cols;
@@ -131,18 +133,16 @@ class <?=$class_name?> {
     }
     // Necessary because Armadillo stores column-by-column but the linked RMA
     // functions expect row-stored values
-    // TODO: Extract perfect match probes
-    matrix = matrix.t(); // Possibly taken care of by Collect?
   }
 
   // TODO: How to extract a pointer to the data? 
   void DoStep(Task& task, cGLA& gla) {
     double *params = (double *) malloc(3 * sizeof(double));
     for (size_t i = task.start_index; i <= task.end_index; i++) {
-      rma_bg_parameters((double *) matrix.memptr(), params, matrix.n_rows, 
-        matrix.n_cols, i);
-      rma_bg_adjust((double *) matrix.memptr(), params, matrix.n_rows, 
-        matrix.n_cols, i);
+      rma_bg_parameters(matrix_as_doubles.memptr(), params, 
+        matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, i);
+      rma_bg_adjust(matrix_as_doubles.memptr(), params, 
+        matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, i);
     }
   }
 
