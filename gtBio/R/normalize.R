@@ -7,7 +7,7 @@ RMA <- function(files) {
 
   # This is equivalent to rma_bg_correct in just.rma
   correctedMatrix <- BackgroundCorrect(states = state, outputs = 
-    c(corrected = Matrix), shouldTranspose = FALSE, 
+    c(corrected = Matrix), shouldTranspose = TRUE, 
     field_to_access = "Q1__Intensity")
 
   # The following code are equivalent to rma_c_call in just.rma
