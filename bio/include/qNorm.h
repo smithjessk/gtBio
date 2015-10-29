@@ -1,3 +1,6 @@
+#ifndef QUANTILE_NORM
+#define QUANTILE_NORM
+
 #include <armadillo>
 #include <math.h>
 
@@ -82,16 +85,17 @@ namespace gtBio {
   /**
    * Perform quantile normalization as described in Bolstad 2001:
    * http://bmbolstad.com/stuff/qnorm.pdf
-   * @param  data Each dataset is a column
-   * @return      The normalized data set
+   * @param  data Each dataset is a column. Note that this parameter will be 
+   * modified.
    */
-  arma::mat quantile_normalize(arma::mat data) {
+  void quantile_normalize(arma::mat &data) {
     double fill_value = 1 / sqrt(data.n_cols);
     arma::mat diagonal = arma::vec(data.n_cols);
     diagonal.fill(fill_value);
     arma::umat indices = reversible_sort(data);
     data = data * diagonal * diagonal.t() / accu(square(diagonal));
     rearrange(data, indices);
-    return data;
   }
-}
+} // namespace gtBio
+
+#endif // QUANTILE_NORM

@@ -6,9 +6,9 @@ function CELFileReader(array $t_args, array $outputs) {
     $intType = lookupType('int');
 
     $outputs = array_combine(array_keys($outputs),
-        [lookupType('bio::Variable_Matrix', ['type' => $floatType]),
-         lookupType('bio::Variable_Matrix', ['type' => $floatType]),
-         lookupType('bio::Variable_Matrix', ['type' => $intType])]);
+        [lookupType('statistics::Variable_Matrix', ['type' => $floatType]),
+         lookupType('statistics::Variable_Matrix', ['type' => $floatType]),
+         lookupType('statistics::Variable_Matrix', ['type' => $intType])]);
 
     // Locally named outputs. Used for ProduceTuple
     $outputs_ = array_combine(['intensity', 'stddev', 'pixels'], $outputs);

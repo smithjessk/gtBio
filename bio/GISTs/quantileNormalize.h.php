@@ -1,6 +1,6 @@
 <?
-function Median_Polish($t_args, $outputs, $states) {
-    $class_name = generate_name('Median_Polish');
+function Quantile_Normalize($t_args, $outputs, $states) {
+    $class_name = generate_name('Quantile_Normalize');
     $cgla_name = generate_name('ConvergenceGLA');
     $matrix = array_keys($states)[0];
     $field_to_access = get_default($t_args, 'field_to_access', '');
@@ -10,12 +10,13 @@ function Median_Polish($t_args, $outputs, $states) {
     $matrix_type = array_values($states)[0];
     $inner_type = $matrix_type->get('type');
     $should_transpose = get_default($t_args, 'should_transpose', False);
-    $output = ['polished_matrix' => lookupType('statistics::Variable_Matrix', 
-      ['type' => $inner_type])];
-
+    $output = ['normalized_matrix' => 
+      lookupType('statistics::Variable_Matrix', ['type' => $inner_type])
+    ];
     $identifier = [
         'kind'  => 'GIST',
         'name'  => $class_name,
+        'user_headers'   => ['qNorm.h'],
         'system_headers' => ['armadillo', 'algorithm'],
         'libraries'     => ['armadillo'],
         'iterable'      => true,
@@ -29,20 +30,13 @@ function Median_Polish($t_args, $outputs, $states) {
 class <?=$cgla_name?> {
  public:
   int round_num;
-  bool converging_this_round;
 
   <?=$cgla_name?>(int num) :
-      round_num(num),
-      converging_this_round(true) {}
+      round_num(num) {}
 
-  void AddState(<?=$cgla_name?> other) {
-    converging_this_round = converging_this_round && 
-      other.converging_this_round;
-  }
-
-  // TODO: Add better converging conditions
+  void AddState(<?=$cgla_name?> other) {}
   bool ShouldIterate() {
-    return round_num < 5;
+    return false;
   }
 };
 
@@ -54,10 +48,7 @@ class <?=$class_name?> {
   using Matrix = <?=$matrix_type?>::Matrix;
   using cGLA = <?=$cgla_name?>;
 
-  struct Task {
-    long start_index; // Which row or column this local scheduler starts at
-    long end_index; // Which row or column it ends at. Inclusive bound.
-  };
+  struct Task {};
 
   struct LocalScheduler {
     int thread_index;
@@ -75,17 +66,7 @@ class <?=$class_name?> {
         matrix(matrix) {}
 
     bool GetNextTask(Task& task) {
-      bool ret = !finished_scheduling;
-      long count;
-      if (round_num % 2 == 1) {
-        count = matrix.n_rows;
-      } else {
-        count = matrix.n_cols;
-      }
-      task.start_index = thread_index * count / num_threads;
-      task.end_index = (thread_index + 1) * count / num_threads - 1;
-      finished_scheduling = true;
-      return ret;
+      return false;
     }
   };
 
@@ -93,30 +74,9 @@ class <?=$class_name?> {
   using WorkUnits = std::vector<WorkUnit>;
 
  private:
-  // Without a limit on the number of iterations, the process could never end.
   int round_num;
   int num_threads;
   Matrix matrix;
-
-  void RowPolish(Task& task, cGLA& gla) {
-    int start = task.start_index;
-    int end = task.end_index;
-    arma::Col<Inner> med_val = 
-      median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    arma::Col<Inner> med(matrix.n_cols);
-    med.fill(med_val(0, 0));
-    matrix.submat(start, 0, end, matrix.n_cols - 1) -= med.t();
-  }
-
-  void ColPolish(Task& task, cGLA& gla) {
-    int start = task.start_index;
-    int end = task.end_index;
-    arma::Col<Inner> med_val = 
-      median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    arma::Col<Inner> med(matrix.n_rows);
-    med.fill(med_val(0, 0));
-    matrix.submat(0, start, matrix.n_rows - 1, end) -= med;
-  }
 
  public:
   <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
@@ -141,10 +101,7 @@ class <?=$class_name?> {
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
-    arma::uword n_rows = matrix.n_rows;
-    arma::uword n_cols = matrix.n_cols;
-    int min_dimension = std::min(n_rows, n_cols);
-    this->num_threads = std::min(min_dimension, suggested_num_workers);
+    this->num_threads = 1;
     std::printf("Beginning round %d with %d workers.\n", round_num, 
       this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
@@ -155,20 +112,16 @@ class <?=$class_name?> {
     }
   }
 
-  // If round number is odd, do a row polish. Otherwise, do a column polish.
+  // TODO: Parallelize this nonsense
   void DoStep(Task& task, cGLA& gla) {
-    if (round_num % 2 == 1) {
-      RowPolish(task, gla);
-    } else {
-      ColPolish(task, gla);
-    }
+    quantile_normalize(matrix);
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
     <? if ($should_transpose) { ?>
-      polished_matrix = matrix.t();
+      normalized_matrix = matrix.t();
     <? } else { ?>
-      polished_matrix = matrix;
+      normalized_matrix = matrix;
     <? } ?>
   }
 
