@@ -101,21 +101,25 @@ class <?=$class_name?> {
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.start_index;
     int end = task.end_index;
+    std::printf("Performing row polish on start and end indices %d, %d\n", 
+      start, end);
     arma::Col<Inner> med_val = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    arma::Col<Inner> med(matrix.n_cols);
-    med.fill(med_val(0, 0));
-    matrix.submat(start, 0, end, matrix.n_cols - 1) -= med.t();
+    for (size_t i = 0; i < end - start; i++) {
+      matrix.row(start + i) -= med_val(i);
+    }
   }
 
   void ColPolish(Task& task, cGLA& gla) {
     int start = task.start_index;
     int end = task.end_index;
-    arma::Col<Inner> med_val = 
+    std::printf("Performing col polish on start and end indices %d, %d\n", 
+      start, end);
+    arma::Row<Inner> med_val = 
       median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    arma::Col<Inner> med(matrix.n_rows);
-    med.fill(med_val(0, 0));
-    matrix.submat(0, start, matrix.n_rows - 1, end) -= med;
+    for (size_t i = 0; i < end - start; i++) {
+      matrix.col(start + i) -= med_val(i);
+    }
   }
 
  public:

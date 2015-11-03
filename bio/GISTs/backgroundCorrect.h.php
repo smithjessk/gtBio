@@ -29,8 +29,8 @@ function Background_Correct($t_args, $outputs, $states) {
       'output'          => $output,
       'result_type'     => 'single',
       'properties'      => ['matrix'],
-      'extras'          => array_merge($matrix_type->extras(), ['type' =>
-        lookupType('base::DOUBLE')]),
+      'extras'          => array_merge($matrix_type->extras(), [
+        'type' => lookupType('base::DOUBLE')]),
   ];
 ?>
 
