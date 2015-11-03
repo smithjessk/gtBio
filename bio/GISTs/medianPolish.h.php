@@ -22,6 +22,7 @@ function Median_Polish($t_args, $outputs, $states) {
         'output'        => $output,
         'result_type'   => 'single',
         'properties'      => ['matrix'],
+        'intermediates'   => false,
         'extras'          => $matrix_type->extras(),
     ];
 ?>
@@ -42,6 +43,7 @@ class <?=$cgla_name?> {
 
   // TODO: Add better converging conditions
   bool ShouldIterate() {
+    std::printf("Returning %d for ShouldIterate because round_num = %d\n", round_num < 5, round_num);
     return round_num < 5;
   }
 };
@@ -101,8 +103,6 @@ class <?=$class_name?> {
   void RowPolish(Task& task, cGLA& gla) {
     int start = task.start_index;
     int end = task.end_index;
-    std::printf("Performing row polish on start and end indices %d, %d\n", 
-      start, end);
     arma::Col<Inner> med_val = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
     for (size_t i = 0; i < end - start; i++) {
@@ -113,8 +113,6 @@ class <?=$class_name?> {
   void ColPolish(Task& task, cGLA& gla) {
     int start = task.start_index;
     int end = task.end_index;
-    std::printf("Performing col polish on start and end indices %d, %d\n", 
-      start, end);
     arma::Row<Inner> med_val = 
       median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
     for (size_t i = 0; i < end - start; i++) {

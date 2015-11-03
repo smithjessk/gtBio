@@ -9,4 +9,4 @@ library(gtBase)
 
 f <- "../demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL"
 normalizedMatrix <- RMA(f)
-x <- View(normalizedMatrix)
+View(normalizedMatrix)
