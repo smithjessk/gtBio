@@ -4,7 +4,6 @@ function Background_Correct($t_args, $outputs, $states) {
   $cgla_name = generate_name('ConvergenceGLA');
   $matrix = array_keys($states)[0];
   $field_to_access = get_default($t_args, 'field_to_access', '');
-
   $from_matrix = get_default($t_args, 'from_matrix', False);
   $matrix_grabber = $from_matrix ? 
     $matrix.'.GetMatrix()' : 
@@ -12,14 +11,14 @@ function Background_Correct($t_args, $outputs, $states) {
   $matrix_type = array_values($states)[0]->output()[$field_to_access];
   $inner_type = $matrix_type->get('type');
   $should_transpose = get_default($t_args, 'should_transpose', False);
-
   if ($field_to_access != '') {
     $field_to_access = '.' + $field_to_access;
   }
-
-  $output = ['corrected_matrix' => lookupType('statistics::Variable_Matrix', 
-      ['type' => $inner_type])];
-  
+  $output = array_combine(array_keys($outputs), [
+    lookupType('statistics::Variable_Matrix', [
+      'type' => lookupType('base::DOUBLE')
+    ]
+  )]);
   $identifier = [
       'kind' => 'GIST',
       'name' => $class_name,
@@ -30,7 +29,8 @@ function Background_Correct($t_args, $outputs, $states) {
       'output'          => $output,
       'result_type'     => 'single',
       'properties'      => ['matrix'],
-      'extras'          => $matrix_type->extras(),
+      'extras'          => array_merge($matrix_type->extras(), ['type' =>
+        lookupType('base::DOUBLE')]),
   ];
 ?>
 
@@ -131,12 +131,12 @@ class <?=$class_name?> {
         this->num_threads, matrix), new cGLA());
       workers.push_back(worker); 
     }
-    // Necessary because Armadillo stores column-by-column but the linked RMA
-    // functions expect row-stored values
   }
 
   // TODO: How to extract a pointer to the data? 
   void DoStep(Task& task, cGLA& gla) {
+    std::printf("Performing background polish on columns %ld through %ld\n",
+      task.start_index, task.end_index);
     double *params = (double *) malloc(3 * sizeof(double));
     for (size_t i = task.start_index; i <= task.end_index; i++) {
       rma_bg_parameters(matrix_as_doubles.memptr(), params, 
@@ -148,17 +148,17 @@ class <?=$class_name?> {
 
   void GetResult(<?=typed_ref_args($output)?>) {
     <? if ($should_transpose) { ?>
-      corrected_matrix = matrix.t();
+      <?=array_keys($outputs)[0]?> = matrix_as_doubles.t();
     <? } else { ?>
-      corrected_matrix = matrix;
+      <?=array_keys($outputs)[0]?> = matrix_as_doubles;
     <? } ?>
   }
 
-  inline const Matrix& GetMatrix() const {
+  inline const arma::mat& GetMatrix() const {
     <? if ($should_transpose) { ?>
-      return matrix.t();
+      return matrix_as_doubles.t();
     <? } else { ?>
-      return matrix;
+      return matrix_as_doubles;
     <? } ?>
   }
 };

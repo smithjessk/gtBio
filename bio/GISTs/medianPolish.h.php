@@ -8,11 +8,11 @@ function Median_Polish($t_args, $outputs, $states) {
       $field_to_access = '.' + $field_to_access;
     }
     $matrix_type = array_values($states)[0];
-    $inner_type = $matrix_type->get('type');
+    $inner_type = array_values($states)[0]->get('type');
     $should_transpose = get_default($t_args, 'should_transpose', False);
-    $output = ['polished_matrix' => lookupType('statistics::Variable_Matrix', 
-      ['type' => $inner_type])];
-
+    $output = array_combine(array_keys($outputs), [
+      lookupType('statistics::Variable_Matrix', ['type' => $inner_type]
+    )]);
     $identifier = [
         'kind'  => 'GIST',
         'name'  => $class_name,
@@ -51,7 +51,7 @@ class <?=$class_name?> {
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
   using Inner = <?=$inner_type?>;
-  using Matrix = <?=$matrix_type?>::Matrix;
+  using Matrix = arma::Mat<Inner>;
   using cGLA = <?=$cgla_name?>;
 
   struct Task {
@@ -140,6 +140,8 @@ class <?=$class_name?> {
 
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
+    std::printf("Starting round %d on a matrix of dimension %d by %d\n", 
+      round_num, matrix.n_rows, matrix.n_cols);
     round_num++;
     arma::uword n_rows = matrix.n_rows;
     arma::uword n_cols = matrix.n_cols;
@@ -166,9 +168,9 @@ class <?=$class_name?> {
 
   void GetResult(<?=typed_ref_args($output)?>) {
     <? if ($should_transpose) { ?>
-      polished_matrix = matrix.t();
+      <?=array_keys($outputs)[0]?> = matrix.t();
     <? } else { ?>
-      polished_matrix = matrix;
+      <?=array_keys($outputs)[0]?> = matrix;
     <? } ?>
   }
 
