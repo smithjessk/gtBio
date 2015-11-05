@@ -46,55 +46,36 @@ namespace gtBio {
   }
 
   /**
-   * Sort each column of data in ascending order. Return a matrix where entry
-   * (i, j) holds the original index of entry (i, j) in column j before any 
-   * sorting was done.
-   * @param  data Matrix that will be sorted in-place
-   * @return      
+   * Sort a particular column in ascending order.
+   * @param data      The data whose column will be sorted in-place.
+   * @param indices   After this function is done, entry (i, col_index) will 
+   *                  hold the original entry (i, col_index) before any sorting
+   *                  was done.
+   * @param col_index The column to sort.
    */
-  arma::umat reversible_sort(arma::mat &data) {
-    arma::umat indices(data.n_rows, data.n_cols);
+  void reversible_column_sort(arma::mat &data, arma::umat &indices, 
+    long col_index) {
     for (size_t i = 0; i < data.n_rows; i++) {
-      for (size_t j = 0; j < data.n_cols; j++) {
-        indices(i, j) = i;  
-      }
+      indices(i, col_index) = i;
     }
-    for (size_t j = 0; j < data.n_cols; j++) {
-      arma::vec data_col(data.colptr(j), data.n_rows, false);
-      arma::uvec indices_col(indices.colptr(j), data.n_rows, false);
-      quicksort(data_col, indices_col, 0, data.n_rows - 1);
-    }
-    return indices;
+    arma::vec data_col(data.colptr(col_index), data.n_rows, false);
+    arma::uvec indices_col(indices.colptr(col_index), data.n_rows, false);
+    quicksort(data_col, indices_col, 0, data.n_rows - 1);
   }
 
   /**
-   * Unsort data given the previous indices.
-   * @param data    Reference to the data to be unsorted.
-   * @param indices Indices as returned by reversible_sort
+   * Unsort a particular column given the pre-sort indices.
+   * @param data      Reference to the data to unsort.
+   * @param indices   Reference to the indices as returned by 
+   *                  reversible_column_sort.
+   * @param col_index The column to sort.
    */
-  void rearrange(arma::mat &data, arma::umat &indices) {
+  void rearrange_column(arma::mat &data, arma::umat &indices, long col_index) {
     arma::mat copy_of_data(data.memptr(), data.n_rows, data.n_cols);
     for (size_t i = 0; i < indices.n_rows; i++) {
-      for (size_t j = 0; j < indices.n_cols; j++) {
-        uint index = indices(i, j);
-        data(i, j) = copy_of_data(index, j);
-      }
+      uint sorted_index = indices(i, col_index);
+      data(i, col_index) = copy_of_data(sorted_index, col_index);
     }
-  }
-
-  /**
-   * Perform quantile normalization as described in Bolstad 2001:
-   * http://bmbolstad.com/stuff/qnorm.pdf
-   * @param  data Each dataset is a column. Note that this parameter will be 
-   * modified.
-   */
-  void quantile_normalize(arma::mat &data) {
-    double fill_value = 1 / sqrt(data.n_cols);
-    arma::mat diagonal = arma::vec(data.n_cols);
-    diagonal.fill(fill_value);
-    arma::umat indices = reversible_sort(data);
-    data = data * diagonal * diagonal.t() / accu(square(diagonal));
-    rearrange(data, indices);
   }
 } // namespace gtBio
 

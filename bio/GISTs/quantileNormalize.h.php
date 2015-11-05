@@ -10,9 +10,9 @@ function Quantile_Normalize($t_args, $outputs, $states) {
     $matrix_type = array_values($states)[0];
     $inner_type = $matrix_type->get('type');
     $should_transpose = get_default($t_args, 'should_transpose', False);
-    $output = ['normalized_matrix' => 
-      lookupType('statistics::Variable_Matrix', ['type' => $inner_type])
-    ];
+    $output = array_combine(array_keys($outputs), [
+      lookupType('statistics::Variable_Matrix', ['type' => $inner_type]
+    )]);
     $identifier = [
         'kind'  => 'GIST',
         'name'  => $class_name,
@@ -45,10 +45,13 @@ class <?=$class_name?> {
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
   using Inner = <?=$inner_type?>;
-  using Matrix = <?=$matrix_type?>::Matrix;
+  using Matrix = arma::Mat<Inner>;
   using cGLA = <?=$cgla_name?>;
 
-  struct Task {};
+  struct Task {
+    long start_index; // Which row or column this local scheduler starts at
+    long end_index; // Which row or column it ends at. Inclusive bound.
+  };
 
   struct LocalScheduler {
     int thread_index;
@@ -66,7 +69,12 @@ class <?=$class_name?> {
         matrix(matrix) {}
 
     bool GetNextTask(Task& task) {
-      return false;
+      bool ret = !finished_scheduling;
+      long count = (round_num == 1) ? matrix.n_cols : matrix.n_rows;
+      task.start_index = thread_index * count / num_threads;
+      task.end_index = (thread_index + 1) * count / num_threads - 1;
+      finished_scheduling = true;
+      return ret;
     }
   };
 
@@ -77,6 +85,7 @@ class <?=$class_name?> {
   int round_num;
   int num_threads;
   Matrix matrix;
+  arma::umat indices;
 
  public:
   <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
@@ -95,13 +104,19 @@ class <?=$class_name?> {
           matrix = <?=$matrix?>.GetMatrix();
         <? } ?>
 <? } ?> 
-        round_num = 0;
+    round_num = 0;
+    indices = arma::umat(matrix.n_rows, matrix.n_cols);
   }
 
-  // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
-    this->num_threads = 1;
+    if (round_num % 2 == 1) {
+      arma::uword n_cols = matrix.n_cols;
+      this->num_threads = std::min(n_cols, suggested_num_workers);
+    } else {
+      arma::uword n_rows = matrix.n_rows;
+      this->num_threads = std::min(n_rows, suggested_num_workers);
+    }
     std::printf("Beginning round %d with %d workers.\n", round_num, 
       this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
@@ -112,16 +127,27 @@ class <?=$class_name?> {
     }
   }
 
-  // TODO: Parallelize this nonsense
+  // In the first round, sort each column. Store the updated indices in the
+  // appropriate column of indices.
+  // In the second round, update each row with the appropriate value.
+  // In the third round, rearrange each column.
   void DoStep(Task& task, cGLA& gla) {
-    quantile_normalize(matrix);
+    for (size_t index = task.start_index; index <= task.end_index; index++) {
+      if (round_num == 1) {
+        reversible_column_sort(matrix, indices, index);
+      } else if (round_num == 2) {
+        matrix.row(index).fill(accu(matrix.row(index)) / matrix.n_cols);    
+      } else if (round_num == 3) {
+        rearrange_column(matrix, indices, index);
+      }
+    }
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
     <? if ($should_transpose) { ?>
-      normalized_matrix = matrix.t();
+      <?=array_keys($outputs)[0]?> = matrix.t();
     <? } else { ?>
-      normalized_matrix = matrix;
+      <?=array_keys($outputs)[0]?> = matrix;
     <? } ?>
   }
 

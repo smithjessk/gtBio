@@ -137,7 +137,7 @@ class <?=$class_name?> {
           matrix = <?=$matrix?>.GetMatrix();
         <? } ?>
 <? } ?> 
-        round_num = 0;
+    round_num = 0;
   }
 
   // Advance the round number and distribute work among the threads
