@@ -8,5 +8,5 @@ library(gtBase)
 # state <- Collect(data, c(Row, Data), Matrix, size = 5)
 
 f <- "../demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL"
-normalizedMatrix <- RMA(f)
-View(normalizedMatrix)
+matrix <- RMA(f)
+View(matrix)
