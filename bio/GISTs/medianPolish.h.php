@@ -142,8 +142,6 @@ class <?=$class_name?> {
 
   // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
-    std::printf("Starting round %d on a matrix of dimension %d by %d\n", 
-      round_num, matrix.n_rows, matrix.n_cols);
     round_num++;
     arma::uword n_rows = matrix.n_rows;
     arma::uword n_cols = matrix.n_cols;

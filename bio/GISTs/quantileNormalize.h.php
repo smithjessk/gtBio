@@ -34,8 +34,9 @@ class <?=$cgla_name?> {
       round_num(num) {}
 
   void AddState(<?=$cgla_name?> other) {}
+
   bool ShouldIterate() {
-    return false;
+    return round_num < 3;
   }
 };
 
@@ -86,79 +87,6 @@ class <?=$class_name?> {
   Matrix matrix;
   arma::umat indices;
 
-  int partition(arma::vec &data, arma::uvec &indices, int left, int right) {
-    double pivot = data(left);
-    int i = left - 1, j = right + 1;
-    double temp;
-    while (true) {
-      do {
-        j--;
-      } while (data(j) > pivot)
-      do {
-        i++;
-      } while (data(i) < pivot)
-      if (i < j) {
-        temp = data(i);
-        data(i) = data(j);
-        data(j) = temp;
-        temp = indices(i);
-        indices(i) = indices(j);
-        indices(j) = temp;
-      } else {
-        return j;
-      }
-    }
-  }
-
-  void quicksort(arma::vec &data, arma::uvec &indices, int left, int right) {
-    if (left < right) {
-      int p = partition(data, indices, left, right);
-      quicksort(data, indices, left, p);
-      quicksort(data, indices, p + 1, right);
-    }
-  }
-
-  /**
-   * Perform quicksort on data while also swapping the appropriate values in 
-   * indices
-   * @param data    Column vector to sort in place
-   * @param indices Indices to swap
-   * @param left    Leftmost index of the partition
-   * @param right   Rightmost index of the partition
-   */
-   /*
-  void quicksort(arma::vec &data, arma::uvec &indices, int left, int right) {
-    int i = left, j = right;
-    int temp;
-    int pivot = data((left + right) / 2);
-
-    while (i <= j) {
-      while (i < data.n_rows && data(i) < pivot) {
-        i++;
-      }
-      while (j > -1 && data(j) > pivot) {
-        j--;
-      }
-      if (i <= j) {
-        temp = data(i);
-        data(i) = data(j);
-        data(j) = temp;
-        temp = indices(i);
-        indices(i) = indices(j);
-        indices(j) = temp;
-        i++;
-        j--;
-      }
-    }
-
-    if (left < j) {
-      quicksort(data, indices, left, j);
-    }
-    if (i < right) {
-      quicksort(data, indices, i, right);
-    }
-  }*/
-
   /**
    * Sort a particular column in ascending order.
    * @param data      The data whose column will be sorted in-place.
@@ -169,13 +97,8 @@ class <?=$class_name?> {
    */
   void reversible_column_sort(arma::mat &data, arma::umat &indices, 
     long col_index) {
-    for (size_t i = 0; i < data.n_rows; i++) {
-      indices(i, col_index) = i;
-    }
-    std::printf("Set indices for col_index %zu\n", col_index);
-    arma::vec data_col(data.colptr(col_index), data.n_rows, false);
-    arma::uvec indices_col(indices.colptr(col_index), data.n_rows, false);
-    quicksort(data_col, indices_col, 0, data.n_rows - 1);
+    indices.col(col_index) = sort_index(data.col(col_index));
+    data.col(col_index) = sort(data.col(col_index));
   }
 
   /**
@@ -189,7 +112,7 @@ class <?=$class_name?> {
     arma::mat copy_of_data(data.memptr(), data.n_rows, data.n_cols);
     for (size_t i = 0; i < indices.n_rows; i++) {
       uint sorted_index = indices(i, col_index);
-      data(i, col_index) = copy_of_data(sorted_index, col_index);
+      data(sorted_index, col_index) = copy_of_data(i, col_index);
     }
   }
 
@@ -238,7 +161,7 @@ class <?=$class_name?> {
   // In the second round, update each row with the appropriate value.
   // In the third round, rearrange each column.
   void DoStep(Task& task, cGLA& gla) {
-    for (size_t index = task.start_index; index <= task.end_index; index++) {
+    for (long index = task.start_index; index <= task.end_index; index++) {
       if (round_num == 1) {
         reversible_column_sort(matrix, indices, index);
       } else if (round_num == 2) {
