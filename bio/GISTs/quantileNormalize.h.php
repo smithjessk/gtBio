@@ -86,6 +86,7 @@ class <?=$class_name?> {
   int num_threads;
   Matrix matrix;
   arma::umat indices;
+  arma::mat copy_of_data; // Updated after the second round
 
   /**
    * Sort a particular column in ascending order.
@@ -109,7 +110,6 @@ class <?=$class_name?> {
    * @param col_index The column to sort.
    */
   void rearrange_column(arma::mat &data, arma::umat &indices, long col_index) {
-    arma::mat copy_of_data(data.memptr(), data.n_rows, data.n_cols);
     for (size_t i = 0; i < indices.n_rows; i++) {
       uint sorted_index = indices(i, col_index);
       data(sorted_index, col_index) = copy_of_data(i, col_index);
@@ -139,6 +139,9 @@ class <?=$class_name?> {
 
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
+    if (round_num == 3) {
+      copy_of_data = arma::mat(matrix.memptr(), matrix.n_rows, matrix.n_cols);
+    }
     if (round_num % 2 == 1) {
       int n_cols = matrix.n_cols;
       this->num_threads = std::min(n_cols, suggested_num_workers);
