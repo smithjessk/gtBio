@@ -122,7 +122,7 @@ class <?=$class_name?> {
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
     arma::uword n_cols = matrix.n_cols;
-    this->num_threads = std::min((int) n_cols, suggested_num_workers);
+    this->num_threads = 1;
     std::printf("Beginning round %d with %d workers.\n", round_num, 
       this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
@@ -138,12 +138,10 @@ class <?=$class_name?> {
     std::printf("Performing background polish on columns %ld through %ld\n",
       task.start_index, task.end_index);
     double *params = (double *) malloc(3 * sizeof(double));
-    for (size_t i = task.start_index; i <= task.end_index; i++) {
-      rma_bg_parameters(matrix_as_doubles.memptr(), params, 
-        matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, i);
-      rma_bg_adjust(matrix_as_doubles.memptr(), params, 
-        matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, i);
-    }
+    rma_bg_parameters(matrix_as_doubles.memptr(), params, 
+      matrix_as_doubles.n_rows * matrix_as_doubles.n_rows, 1, 0);
+    rma_bg_adjust(matrix_as_doubles.memptr(), params, 
+      matrix_as_doubles.n_rows * matrix_as_doubles.n_rows, 1, 0);
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
