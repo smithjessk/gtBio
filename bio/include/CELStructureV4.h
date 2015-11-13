@@ -127,13 +127,13 @@ public:
     algorithmParams( algorithm.getJump() ),
     header2( algorithmParams.getJump() ),
     cells( header.getNumRows(), header.getNumCols(), header2.getJump())
-    {}	
+    {}
 
-    int32_t getMagic() override {
+    int32_t GetMagic() override {
         return header.getMagic();
     }
 
-    fmat getIntensityMatrix() override {
+    fmat GetIntensityMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
         fmat ret(numRows, numCols);
@@ -145,7 +145,7 @@ public:
         return ret;
     }
 
-    fmat getStdDevMatrix() override {
+    fmat GetStdDevMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
         fmat ret(numRows, numCols);
@@ -157,7 +157,7 @@ public:
         return ret;
     }
 
-    imat getPixelsMatrix() override {
+    imat GetPixelsMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
         imat ret(numRows, numCols);

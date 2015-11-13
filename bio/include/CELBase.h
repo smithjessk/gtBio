@@ -15,6 +15,7 @@ class CELBase {
 public:
     using fmat = arma::fmat;
     using imat = arma::Mat<int32_t>;
+    using string = std::string;
     using pointer = std::unique_ptr<CELBase>;
 
     /**
@@ -23,33 +24,37 @@ public:
      *         59 -> Command Console (Generic)
      *         64 -> Version 4
      */
-    virtual int32_t getMagic() = 0;
+    virtual int32_t GetMagic() = 0;
 
     /**
      * Get the matrix representing the intensity measurements in the CEL file.
      * Enntry (i, j) in this matrix corresponds to entry (i, j) in the result 
-     * of getStdDevMatrix()
+     * of GetStdDevMatrix()
      * @return A square float matrix representing the intensity measurements
      */
-    virtual fmat getIntensityMatrix() = 0;
+    virtual fmat GetIntensityMatrix() = 0;
 
     /**
      * Get the matrix representing the standard deviations of the intensity 
      * measurements in the CEL file. Entry (i, j) in this matrix corresponds to
-     * entry (i, j) in the result of getIntensityMatrix()
+     * entry (i, j) in the result of GetIntensityMatrix()
      * @return A sqaure float matrix representing the standard deviations of 
      * the intensity measurements.
      */
-    virtual fmat getStdDevMatrix() = 0;
+    virtual fmat GetStdDevMatrix() = 0;
 
     /**
      * Get the matrix representing the number of pixels for each entry in the
      * CEL file. Entry (i, j) in this matrix corresponds to entry (i, j) in
-     * the result of getIntensityMatrix() and getStdDevMatrix()
+     * the result of GetIntensityMatrix() and GetStdDevMatrix()
      * @return A sqaure short matrix representing number of pixels for each 
      * entry in the other two matrices (intensity and standard deviation)
      */
-    virtual imat getPixelsMatrix() = 0;
+    virtual imat GetPixelsMatrix() = 0;
+
+    virtual string GetAnnotation() = 0;
+
+    virtual string GetProtocolDate() = 0;
 };
 
 }

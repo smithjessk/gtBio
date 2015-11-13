@@ -316,7 +316,7 @@ public:
         dataGroups.getGroup(0).getNumDataSets(), where)
     {}
 
-    int32_t getMagic() { return fileHeader.getMagic(); }
+    int32_t GetMagic() { return fileHeader.getMagic(); }
 
     // TODO: Update this for multiple data groups
     
@@ -324,7 +324,7 @@ public:
      * Read the intensity values and transform them from little endian to big
      * @return A square matrix in row-major order 
      */
-    fmat getIntensityMatrix() override {
+    fmat GetIntensityMatrix() override {
       char* dStart = dataSets.get(0).getDataStart();
 
       // Square matrix
@@ -338,7 +338,7 @@ public:
       return ret.t(); // Column-major to row-major
     }
 
-    fmat getStdDevMatrix() override {
+    fmat GetStdDevMatrix() override {
         char* dStart = dataSets.get(1).getDataStart();
 
         uint32_t sideLength = sqrt(dataSets.get(1).getNumRows());
@@ -351,7 +351,7 @@ public:
         return ret.t(); // Column-major to row-major
     }
 
-    imat getPixelsMatrix() override {
+    imat GetPixelsMatrix() override {
         char* dStart = dataSets.get(2).getDataStart();
 
         uint32_t sideLength = sqrt(dataSets.get(2).getNumRows());
