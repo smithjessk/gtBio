@@ -10,7 +10,7 @@ RMA <- function(files) {
     c(corrected = Matrix), shouldTranspose = TRUE, 
     field_to_access = "Q1__Intensity")
 
-  # The following code are equivalent to rma_c_call in just.rma
+  # The following code is equivalent to rma_c_call in just.rma
   
   # qnorm_c on perfect match pairs
   normalizedMatrix <- QuantileNormalize(states = correctedMatrix, outputs = 
