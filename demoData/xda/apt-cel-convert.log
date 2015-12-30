@@ -1,7 +1,0 @@
-Timestamp	Total RAM	Free RAM	Swap Available	Memory Available	Memory Available at Start	Memory Available at Block Start	Memory Used Since Start	Memory Used Since Block Start	Memory Resident Size	Memory Virtual Size	Message
-06/11/2015 14:02:25	3804	408	3328	725	725	725	0	0	1	17	version=NON-OFFICIAL-RELEASE
-06/11/2015 14:02:25	3804	408	3328	725	725	725	0	0	1	17	host=jess-ti
-06/11/2015 14:02:25	3804	408	3328	725	725	725	0	0	1	17	cwd=/home/jess/projects/bio/apt-1.17.0-x86_64-intel-linux/bin
-06/11/2015 14:02:25	3804	408	3328	725	725	725	0	0	1	17	command-line=./apt-cel-convert -f xda ../../../gtBio/demoData/GSM1134065_GBX.DISC.PCA2.CEL -o ../../../gtBio/demoData/xda/
-06/11/2015 14:02:25	3804	408	3328	725	725	725	0	0	1	17	Converting ../../../gtBio/demoData/GSM1134065_GBX.DISC.PCA2.CEL to ../../../gtBio/demoData/xda//GSM1134065_GBX.DISC.PCA2.CEL
-06/11/2015 14:02:27	3804	270	3328	713	725	725	11	11	10	25	Run took approximately: 0.03 minute.

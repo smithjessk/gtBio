@@ -1,4 +1,6 @@
 bin/*
+demoData/*
+
 
 gtBio/..Rcheck
 fileReaderUnitTest
