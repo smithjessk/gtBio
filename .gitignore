@@ -1,8 +1,8 @@
 bin/*
 demoData/*
 
-
-gtBio/..Rcheck
+gtBio.Rcheck/
+..Rcheck/
 fileReaderUnitTest
 fileReaderUnitTest.o
 gtest-all.o
