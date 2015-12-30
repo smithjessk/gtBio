@@ -157,10 +157,10 @@ public:
         return ret;
     }
 
-    imat getPixelsMatrix() override {
+    arma::Mat<int32_t> getPixelsMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
-        imat ret(numRows, numCols);
+        arma::Mat<int32_t> ret(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getPixels(i, j);
