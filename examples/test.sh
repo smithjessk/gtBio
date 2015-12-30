@@ -1,3 +1,3 @@
 #!/bin/bash
 
-Rscript bgPolish.R
+Rscript product_tuples.R

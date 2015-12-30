@@ -44,7 +44,7 @@ public:
 
 class TopHeader2 {
     struct TopHeader2Data {
-        int32_t margin; // cell margin used for computign the cell intensity value
+        int32_t margin; // cell margin to compute the cell intensity value
         uint32_t numOutliers; // Number of outlier cells.
         uint32_t numMaskedCells; // Number of masked cells.
         int32_t	numSubgrids;

@@ -132,27 +132,18 @@ class <?=$class_name?> {
     // Necessary because Armadillo stores column-by-column but the linked RMA
     // functions expect row-stored values
     // TODO: Extract perfect match probes
-    std::printf("Before transposing, (num_rows, num_cols) = (%d, %d)\n",
-      matrix.n_rows, matrix.n_cols);
     matrix = matrix.t(); // Possibly taken care of by Collect?
-    std::printf("After transposing, (num_rows, num_cols) = (%d, %d)\n",
-      matrix.n_rows, matrix.n_cols);
   }
 
   // TODO: How to extract a pointer to the data? 
   void DoStep(Task& task, cGLA& gla) {
     double *params = (double *) malloc(3 * sizeof(double));
-    std::printf("This might be it: start_index = %ld, end_index = %ld\n", 
-      task.start_index, task.end_index);
-    std::printf("What a time to be alive: %d\n", *(matrix.memptr() + 1));
     for (size_t i = task.start_index; i <= task.end_index; i++) {
       rma_bg_parameters((double *) matrix.memptr(), params, matrix.n_rows, 
         matrix.n_cols, i);
-      std::printf("finished\n");
       rma_bg_adjust((double *) matrix.memptr(), params, matrix.n_rows, 
         matrix.n_cols, i);
     }
-    std::printf("still alive\n");
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {

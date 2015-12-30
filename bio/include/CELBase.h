@@ -52,4 +52,4 @@ public:
 
 }
 
-#endif
+#endif // CEL_BASE_CLASS
