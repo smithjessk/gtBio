@@ -1,12 +1,16 @@
 ReadCEL <- function(paths, outputs, ...) {
   if (missing(outputs)) {
     outputs <- list(
-      Intensity = TYPE(statistics::VariableMatrix, type = TYPE(base::float)), 
-      StdDev = TYPE(statistics::VariableMatrix, type = TYPE(base::float)),
-      Pixels = TYPE(statistics::VariableMatrix, type = TYPE(base::int)))
+        chip_number = TYPE(base::int),
+        chip_type = TYPE(base::string),
+        fid = TYPE(base::int),
+        intensity = TYPE(base::float))
   }
   alias <- create.alias("read")
   gi <- GI(bio::CELFileReader)
-  data <- Input(files = paths, gi = gi, outputs = outputs, ...)
-  set.class(c(data), c("ReadFile", class(data)))
+  Input(files = paths, gi = gi, outputs = outputs, ...)
+}
+
+ReadPMInfoFile <- function(path) {
+  ReadCSV(path, c(fid = base::int, fsetid = base::int), header=TRUE)
 }
