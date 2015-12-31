@@ -73,9 +73,9 @@ class <?=$className?> {
   bool ProduceTuple(<?=typed_ref_args($outputs_)?>) {
     if (!finished) {
       _fid++;
-      int row_index = _fid / _intensity_matrix.n_cols;
-      int col_index = _fid % _intensity_matrix.n_cols;
-      std::printf("fid = %d, row = %d, col = %d\n", fid, row_index, col_index);
+      // Switch from 1-based to 0-based indexing
+      int row_index = (_fid - 1) / _intensity_matrix.n_cols; 
+      int col_index = (_fid - 1) % _intensity_matrix.n_cols;
       chip_number = _chip_number;
       chip_type = _chip_type;
       fid = _fid;
