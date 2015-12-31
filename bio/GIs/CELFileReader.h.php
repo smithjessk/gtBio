@@ -11,12 +11,10 @@ function CELFileReader(array $t_args, array $outputs) {
     $stringType = lookupType('string');
 
     $outputs = array_combine(array_keys($outputs), [
-      generateType('base::string', $stringType),
-      generateType('base::int', $intType),
-      generateType('base::int', $intType),
-      generateType('base::float', $floatType),
-      generateType('base::float', $floatType),
-      generateType('base::int', $intType)
+     $intType,
+     $stringType,
+     $intType,
+     $floatType
     ]);
 
     $output_names = [
