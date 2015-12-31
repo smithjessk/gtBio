@@ -4,7 +4,6 @@ function Background_Correct($t_args, $outputs, $states) {
   $cgla_name = generate_name('ConvergenceGLA');
   $matrix = array_keys($states)[0];
   $field_to_access = get_default($t_args, 'field_to_access', '');
-
   $from_matrix = get_default($t_args, 'from_matrix', False);
   $matrix_grabber = $from_matrix ? 
     $matrix.'.GetMatrix()' : 
@@ -12,14 +11,14 @@ function Background_Correct($t_args, $outputs, $states) {
   $matrix_type = array_values($states)[0]->output()[$field_to_access];
   $inner_type = $matrix_type->get('type');
   $should_transpose = get_default($t_args, 'should_transpose', False);
-
   if ($field_to_access != '') {
     $field_to_access = '.' + $field_to_access;
   }
-
-  $output = ['corrected_matrix' => lookupType('statistics::Variable_Matrix', 
-      ['type' => $inner_type])];
-  
+  $output = array_combine(array_keys($outputs), [
+    lookupType('statistics::Variable_Matrix', [
+      'type' => lookupType('base::DOUBLE')
+    ]
+  )]);
   $identifier = [
       'kind' => 'GIST',
       'name' => $class_name,
@@ -30,15 +29,16 @@ function Background_Correct($t_args, $outputs, $states) {
       'output'          => $output,
       'result_type'     => 'single',
       'properties'      => ['matrix'],
-      'extras'          => $matrix_type->extras(),
+      'extras'          => array_merge($matrix_type->extras(), [
+        'type' => lookupType('base::DOUBLE')]),
   ];
 ?>
 
 // Found in preprocessCore
 extern "C" void rma_bg_parameters(double *PM, double *param, size_t rows, 
   size_t cols, size_t column);
-extern "C" void rma_bg_adjust(double *PM, double *param, size_t rows, size_t cols, 
-  size_t column);
+extern "C" void rma_bg_adjust(double *PM, double *param, size_t rows, 
+  size_t cols, size_t column);
 
 class <?=$cgla_name?> {
  public:
@@ -96,10 +96,10 @@ class <?=$class_name?> {
   int round_num;
   int num_threads;
   Matrix matrix;
+  arma::mat matrix_as_doubles;
 
  public:
   <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
-
 <? if ($should_transpose) { ?>
     std::cout << "Transposing matrix..." << std::endl;
     <? if ($field_to_access != '') { ?> 
@@ -115,12 +115,14 @@ class <?=$class_name?> {
     <? } ?>
 <? } ?> 
     round_num = 0;
+    matrix_as_doubles = arma::conv_to<arma::mat>::from(matrix);
   }
 
+  // TODO: Extract perfect match probes
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
     arma::uword n_cols = matrix.n_cols;
-    this->num_threads = std::min((int) n_cols, suggested_num_workers);
+    this->num_threads = 1;
     std::printf("Beginning round %d with %d workers.\n", round_num, 
       this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
@@ -131,34 +133,31 @@ class <?=$class_name?> {
     }
     // Necessary because Armadillo stores column-by-column but the linked RMA
     // functions expect row-stored values
-    // TODO: Extract perfect match probes
     matrix = matrix.t(); // Possibly taken care of by Collect?
   }
 
   // TODO: How to extract a pointer to the data? 
   void DoStep(Task& task, cGLA& gla) {
     double *params = (double *) malloc(3 * sizeof(double));
-    for (size_t i = task.start_index; i <= task.end_index; i++) {
-      rma_bg_parameters((double *) matrix.memptr(), params, matrix.n_rows, 
-        matrix.n_cols, i);
-      rma_bg_adjust((double *) matrix.memptr(), params, matrix.n_rows, 
-        matrix.n_cols, i);
-    }
+    rma_bg_parameters(matrix_as_doubles.memptr(), params, 
+      matrix_as_doubles.n_rows * matrix_as_doubles.n_rows, 1, 0);
+    rma_bg_adjust(matrix_as_doubles.memptr(), params, 
+      matrix_as_doubles.n_rows * matrix_as_doubles.n_rows, 1, 0);
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
     <? if ($should_transpose) { ?>
-      corrected_matrix = matrix.t();
+      <?=array_keys($outputs)[0]?> = matrix_as_doubles.t();
     <? } else { ?>
-      corrected_matrix = matrix;
+      <?=array_keys($outputs)[0]?> = matrix_as_doubles;
     <? } ?>
   }
 
-  inline const Matrix& GetMatrix() const {
+  inline const arma::mat& GetMatrix() const {
     <? if ($should_transpose) { ?>
-      return matrix.t();
+      return matrix_as_doubles.t();
     <? } else { ?>
-      return matrix;
+      return matrix_as_doubles;
     <? } ?>
   }
 };

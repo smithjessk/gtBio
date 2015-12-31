@@ -77,11 +77,11 @@ class <?=$className?> {
   bool ProduceTuple(<?=typed_ref_args($outputs_)?>) {
     if (!finished) {
       _fid++;
+      int row_index = fid / intensity_matrix.n_col;
+      int col_index = fid % intensity_matrix.n_col;
       chip_number = _chip_number;
       chip_type = _chip_type;
       fid = _fid;
-      int row_index = fid / intensity_matrix.n_col;
-      int col_index = fid % intensity_matrix.n_col;
       intensity = intensity_matrix(row_index, col_index);
       if (fid < intensity_matrix.n_elem) {
         return true;

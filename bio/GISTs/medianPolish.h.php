@@ -8,11 +8,11 @@ function Median_Polish($t_args, $outputs, $states) {
       $field_to_access = '.' + $field_to_access;
     }
     $matrix_type = array_values($states)[0];
-    $inner_type = $matrix_type->get('type');
+    $inner_type = array_values($states)[0]->get('type');
     $should_transpose = get_default($t_args, 'should_transpose', False);
-    $output = ['polished_matrix' => lookupType('statistics::Variable_Matrix', 
-      ['type' => $inner_type])];
-
+    $output = array_combine(array_keys($outputs), [
+      lookupType('statistics::Variable_Matrix', ['type' => $inner_type]
+    )]);
     $identifier = [
         'kind'  => 'GIST',
         'name'  => $class_name,
@@ -22,6 +22,7 @@ function Median_Polish($t_args, $outputs, $states) {
         'output'        => $output,
         'result_type'   => 'single',
         'properties'      => ['matrix'],
+        'intermediates'   => false,
         'extras'          => $matrix_type->extras(),
     ];
 ?>
@@ -42,6 +43,7 @@ class <?=$cgla_name?> {
 
   // TODO: Add better converging conditions
   bool ShouldIterate() {
+    std::printf("Returning %d for ShouldIterate because round_num = %d\n", round_num < 5, round_num);
     return round_num < 5;
   }
 };
@@ -51,7 +53,7 @@ class <?=$class_name?> {
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
   using Inner = <?=$inner_type?>;
-  using Matrix = <?=$matrix_type?>::Matrix;
+  using Matrix = arma::Mat<Inner>;
   using cGLA = <?=$cgla_name?>;
 
   struct Task {
@@ -103,19 +105,19 @@ class <?=$class_name?> {
     int end = task.end_index;
     arma::Col<Inner> med_val = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    arma::Col<Inner> med(matrix.n_cols);
-    med.fill(med_val(0, 0));
-    matrix.submat(start, 0, end, matrix.n_cols - 1) -= med.t();
+    for (size_t i = 0; i < end - start; i++) {
+      matrix.row(start + i) -= med_val(i);
+    }
   }
 
   void ColPolish(Task& task, cGLA& gla) {
     int start = task.start_index;
     int end = task.end_index;
-    arma::Col<Inner> med_val = 
+    arma::Row<Inner> med_val = 
       median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    arma::Col<Inner> med(matrix.n_rows);
-    med.fill(med_val(0, 0));
-    matrix.submat(0, start, matrix.n_rows - 1, end) -= med;
+    for (size_t i = 0; i < end - start; i++) {
+      matrix.col(start + i) -= med_val(i);
+    }
   }
 
  public:
@@ -135,7 +137,7 @@ class <?=$class_name?> {
           matrix = <?=$matrix?>.GetMatrix();
         <? } ?>
 <? } ?> 
-        round_num = 0;
+    round_num = 0;
   }
 
   // Advance the round number and distribute work among the threads
@@ -166,9 +168,9 @@ class <?=$class_name?> {
 
   void GetResult(<?=typed_ref_args($output)?>) {
     <? if ($should_transpose) { ?>
-      polished_matrix = matrix.t();
+      <?=array_keys($outputs)[0]?> = matrix.t();
     <? } else { ?>
-      polished_matrix = matrix;
+      <?=array_keys($outputs)[0]?> = matrix;
     <? } ?>
   }
 

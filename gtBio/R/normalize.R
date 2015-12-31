@@ -7,16 +7,18 @@ RMA <- function(files) {
 
   # This is equivalent to rma_bg_correct in just.rma
   correctedMatrix <- BackgroundCorrect(states = state, outputs = 
-    c(corrected = Matrix), shouldTranspose = FALSE, 
+    c(corrected = Matrix), shouldTranspose = TRUE, 
     field_to_access = "Q1__Intensity")
 
-  # The following code are equivalent to rma_c_call in just.rma
+  # The following code is equivalent to rma_c_call in just.rma
   
   # qnorm_c on perfect match pairs
+  normalizedMatrix <- QuantileNormalize(states = correctedMatrix, outputs = 
+    c(normalized = Matrix), shouldTranspose = FALSE)
 
   # Equivalent to R_subColSummarize_medianpolish_log
-  MedianPolish(states = correctedMatrix, outputs = 
-    c(normalized = Matrix), shouldTranspose = FALSE)
+  MedianPolish(states = normalizedMatrix, outputs = 
+    c(polished = Matrix), shouldTranspose = FALSE)
 }
 
 BackgroundCorrect <- function(outputs, states, ...) {
@@ -24,6 +26,14 @@ BackgroundCorrect <- function(outputs, states, ...) {
   check.atts(outputs)
   outputs <- convert.atts(outputs)
   gist <- GIST(bio::Background_Correct, ...)
+  Transition(gist, outputs, states)
+}
+
+QuantileNormalize <- function(outputs, states, ...) {
+  outputs <- substitute(outputs)
+  check.atts(outputs)
+  outputs <- convert.atts(outputs)
+  gist <- GIST(bio::Quantile_Normalize, ...)
   Transition(gist, outputs, states)
 }
 
