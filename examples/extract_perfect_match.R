@@ -38,7 +38,7 @@ info <- ReadPMInfoFile(infoFile)
 joined <- Join(data, fid, info, fid)
 sorted <- OrderBy(joined, asc("fsetid"))
 filtered <- sorted[fid == 2760621 || fid == 562369]
-x <- View(Count(filtered))
+x <- as.data.frame(filtered)
 
 
 
