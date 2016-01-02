@@ -37,9 +37,9 @@ data <- ReadCEL(c(celFile1))
 info <- ReadPMInfoFile(infoFile)
 joined <- Join(data, fid, info, fid)
 sorted <- OrderBy(joined, asc("fsetid"))
-filtered <- sorted[fid == 2760621 || fid == 562369]
-x <- as.data.frame(filtered)
-
+# filtered <- sorted[fid == 2760621 || fid == 562369]
+merged <- Collect(sorted, c("chip_number", "intensity"), Matrix, size = 2 * 893078)
+x <- as.data.frame(Count(merged))
 
 
                                         # Assertions:
