@@ -7,14 +7,14 @@ function CELFileReader(array $t_args, array $outputs) {
     $stringType = lookupType('string');
 
     $outputs = array_combine(array_keys($outputs), [
-     $intType,
+     $stringType,
      $stringType,
      $intType,
      $floatType
     ]);
 
     $output_names = [
-      'chip_number',
+      'file_name',
       'chip_type',
       'fid',
       'intensity'
@@ -40,7 +40,7 @@ class <?=$className?> {
   bool finished;
 
   // Relative to this query
-  int _chip_number;
+  std::string _file_name;
 
   // Read from the CEL file
   arma::fmat _intensity_matrix;
@@ -53,6 +53,7 @@ class <?=$className?> {
 
   // file_name must be an absolute path
   void initialize_matrices(std::string file_name) {
+    _file_name = file_name;
     gtBio::CELFileReader in(file_name.c_str());
     gtBio::CELBase::pointer data = in.readFile();
     _intensity_matrix = data->getIntensityMatrix();
@@ -60,7 +61,6 @@ class <?=$className?> {
     _pixels_matrix = data->getPixelsMatrix();
     //    chip_type = data->get_chip_type();
     _chip_type = "test";
-    _chip_number = 100;
   }
 
  public:
@@ -76,7 +76,7 @@ class <?=$className?> {
       // Switch from 1-based to 0-based indexing
       int row_index = (_fid - 1) / _intensity_matrix.n_cols; 
       int col_index = (_fid - 1) % _intensity_matrix.n_cols;
-      chip_number = _chip_number;
+      file_name = _file_name;
       chip_type = _chip_type;
       fid = _fid;
       intensity = _intensity_matrix(row_index, col_index);

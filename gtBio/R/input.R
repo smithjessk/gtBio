@@ -1,7 +1,7 @@
 ReadCEL <- function(paths, outputs, ...) {
   if (missing(outputs)) {
     outputs <- list(
-        chip_number = TYPE(base::int),
+        file_name = TYPE(base::string),
         chip_type = TYPE(base::string),
         fid = TYPE(base::int),
         intensity = TYPE(base::float))
@@ -12,5 +12,5 @@ ReadCEL <- function(paths, outputs, ...) {
 }
 
 ReadPMInfoFile <- function(path) {
-  ReadCSV(path, c(fid = base::int, fsetid = base::int), header=TRUE)
+  ReadCSV(path, c(fid = base::int, fsetid = base::int), header = TRUE)
 }

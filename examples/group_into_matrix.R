@@ -30,15 +30,17 @@ colon_cancer_files = c(
 
 infoFile <- "../scripts/pd.huex.1.0.st.v2.csv"
 
-data <- ReadCEL(c(celFile1))
+data <- ReadCEL(c(celFile1, celFile2))
 info <- ReadPMInfoFile(infoFile)
-
 joined <- Join(data, fid, info, fid)
-filtered <- OrderBy(joined, asc("fsetid"), limit = 2)
 
-# filtered <- joined[fid == 2760621 || fid == 562369]
-x <- as.data.frame(filtered)
-print(x)
+# This sorts the data internally based on fsetid
+grouped <- GroupBy(joined, group = file_name, data = Collect(c(fsetid, intensity)))
+
+# filtered <- sorted[fid == 2760621 || fid == 562369]
+# merged <- Collect(sorted, c("file_name", "intensity"), Matrix, size = 2 * 893078)
+# x <- as.data.frame(Count(merged))
+
 
                                         # Assertions:
 # (fid, fsetid) = (2760621, 2315554), (562369, 2320048)
