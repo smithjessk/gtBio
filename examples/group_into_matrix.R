@@ -4,9 +4,9 @@ library(gtBase)
 celFile1 <- 
       "/home/jess/git/gtBio/demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL"
 celFile2 <- 
-      "/home/jess/git/gtBio/demoData/command-console/GSM1134065_GBX.DISC.PCA2.CELdemoData/command-console/GSM1134066_GBX.DISC.PCA3.CEL"
+      "/home/jess/git/gtBio/demoData/command-console/GSM1134066_GBX.DISC.PCA3.CEL"
 celFile3 <- 
-      "/home/jess/git/gtBio/demoData/command-console/GSM1134065_GBX.DISC.PCA2.CELxda/GSM1134065_GBX.DISC.PCA2.CEL"
+      "/home/jess/git/gtBio/demoData/xda/GSM1134065_GBX.DISC.PCA2.CEL"
 
 colon_cancer_files = c(
                    "~/colon-cancer-data/10_5N.CEL",
@@ -33,16 +33,14 @@ colon_cancer_files = c(
 
 infoFile <- "../scripts/pd.huex.1.0.st.v2.csv"
 
-data <- ReadCEL(c(celFile1))
+data <- ReadCEL(c(celFile1, celFile2, celFile3))
 info <- ReadPMInfoFile(infoFile)
+numFids <- Count(ReadPMInfoFile(infoFile))
 joined <- Join(data, fid, info, fid)
 
-ordered <- OrderBy(joined, dsc(fid), rank = ordered_fid)
-reordered <- OrderBy(ordered, dsc(ordered_fid))
-
-builder <- GLA(bio::BuildMatrix, files = list(celFile1))
-matrix <- Aggregate(reordered, builder, convert.exprs(quote(c(file_name, 
-      chip_type, ordered_fid, intensity))), c("Matrix"))
+builder <- GLA(bio::Build_Matrix, files = list(celFile1, celFile2, celFile3))
+matrix <- Aggregate(joined, builder, convert.exprs(quote(c(file_name, 
+      ordered_fid, fid, intensity))), c("Matrix"), states = numFids)
 
 x <- as.object(Count(matrix))
 
