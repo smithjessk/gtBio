@@ -1,9 +1,12 @@
 library(gtBio)
 library(gtBase)
 
-celFile1 <- "../demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL"
-celFile2 <- "../demoData/command-console/GSM1134066_GBX.DISC.PCA3.CEL"
-celFile3 <- "../demoData/xda/GSM1134065_GBX.DISC.PCA2.CEL"
+celFile1 <- 
+      "/home/jess/git/gtBio/demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL"
+celFile2 <- 
+      "/home/jess/git/gtBio/demoData/command-console/GSM1134065_GBX.DISC.PCA2.CELdemoData/command-console/GSM1134066_GBX.DISC.PCA3.CEL"
+celFile3 <- 
+      "/home/jess/git/gtBio/demoData/command-console/GSM1134065_GBX.DISC.PCA2.CELxda/GSM1134065_GBX.DISC.PCA2.CEL"
 
 colon_cancer_files = c(
                    "~/colon-cancer-data/10_5N.CEL",
@@ -30,12 +33,18 @@ colon_cancer_files = c(
 
 infoFile <- "../scripts/pd.huex.1.0.st.v2.csv"
 
-data <- ReadCEL(c(celFile1, celFile2))
+data <- ReadCEL(c(celFile1))
 info <- ReadPMInfoFile(infoFile)
 joined <- Join(data, fid, info, fid)
 
-# This sorts the data internally based on fsetid
-grouped <- GroupBy(joined, group = file_name, data = Collect(c(fsetid, intensity)))
+ordered <- OrderBy(joined, dsc(fid), rank = ordered_fid)
+reordered <- OrderBy(ordered, dsc(ordered_fid))
+
+builder <- GLA(bio::BuildMatrix, files = list(celFile1))
+matrix <- Aggregate(reordered, builder, convert.exprs(quote(c(file_name, 
+      chip_type, ordered_fid, intensity))), c("Matrix"))
+
+x <- as.object(Count(matrix))
 
 # filtered <- sorted[fid == 2760621 || fid == 562369]
 # merged <- Collect(sorted, c("file_name", "intensity"), Matrix, size = 2 * 893078)
