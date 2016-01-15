@@ -12,5 +12,6 @@ ReadCEL <- function(paths, outputs, ...) {
 }
 
 ReadPMInfoFile <- function(path) {
-  ReadCSV(path, c(fid = base::int, fsetid = base::int), header = TRUE)
+  ReadCSV(path, c(ordered_fid = base::int, fid = base::int, 
+    fsetid = base::int), header = TRUE)
 }

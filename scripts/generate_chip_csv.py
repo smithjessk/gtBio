@@ -38,9 +38,11 @@ def generate_csv(file_path, output_path):
     num_row = 0
     with open(output_path, 'w') as csv_file:
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(["fid", "fsetid"])
+        csv_writer.writerow(["ordered_fid", "fid", "fsetid"])
+        ordered_fid = 0
         for row in c.execute(statement):
-            csv_writer.writerow(row)
+            csv_writer.writerow([ordered_fid] + list(row))
+            ordered_fid += 1
     print "Wrote output to " + output_path
 
 if __name__ == "__main__":
