@@ -65,10 +65,15 @@ class <?=$className?> {
     filled.resize(max_fid, new_row);
   }
 
+  void resize_fids() {
+    fids.resize(max_fid, -1);
+  }
+
   void resize() {
     std::printf("Resizing with max_fid %d\n", max_fid);
     entries.resize(max_fid, <?=$num_files?>);
     resize_filled();
+    resize_fids();
   }
 
   // Returns the new row index for this fid
@@ -77,8 +82,11 @@ class <?=$className?> {
       max_fid = fid;
       resize();
     }
-    fids.push_back(fid);
+    fids.at(num_fids_processed) = fid;
     num_fids_processed++;
+    if (num_fids_processed % 10000 == 0) {
+      std::printf("Done with %d\n", num_fids_processed);
+    }
     return num_fids_processed - 1;
   }
 
