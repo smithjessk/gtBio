@@ -9,7 +9,7 @@ function BuildMatrix(array $t_args, array $inputs, array $outputs)
   $outputs_ = array_combine(['matrix'], $output_type);
   $file_names = $t_args['files'];
   $num_files = count($file_names);
-  $sys_headers  = ['armadillo', 'map'];
+  $sys_headers  = ['armadillo', 'unordered_map'];
   $user_headers = [];
   $lib_headers  = [];
   $libraries    = ['armadillo'];
@@ -38,8 +38,8 @@ class <?=$className?> {
  private:
   arma::fmat entries;
   std::vector<std::vector<bool>> filled;
-  std::vector<int> fids; // Index = the row in entries that holds the fid
-  std::vector<std::string> file_names;
+  std::unordered_map<int, int> fids; // fid to row
+  std::unordered_map<std::string, int> file_names; // file_name to column
   int num_fids_processed;
   int max_fid;
 
@@ -50,8 +50,10 @@ class <?=$className?> {
   }
 
   void init_col_names() {
+    int column = 0;
 <?  foreach ($file_names as &$file_name) { ?>
-      file_names.push_back("<?=$file_name?>");
+      file_names["<?=$file_name?>"] = column;
+      column++;
 <?  } ?>
   }
 
@@ -65,15 +67,10 @@ class <?=$className?> {
     filled.resize(max_fid, new_row);
   }
 
-  void resize_fids() {
-    fids.resize(max_fid, -1);
-  }
-
   void resize() {
-    std::printf("Resizing with max_fid %d\n", max_fid);
     entries.resize(max_fid, <?=$num_files?>);
     resize_filled();
-    resize_fids();
+    fids.reserve(max_fid);
   }
 
   // Returns the new row index for this fid
@@ -82,11 +79,8 @@ class <?=$className?> {
       max_fid = fid;
       resize();
     }
-    fids.at(num_fids_processed) = fid;
+    fids[fid] = num_fids_processed;
     num_fids_processed++;
-    if (num_fids_processed % 10000 == 0) {
-      std::printf("Done with %d\n", num_fids_processed);
-    }
     return num_fids_processed - 1;
   }
 
@@ -94,8 +88,9 @@ class <?=$className?> {
   // GLA.
   // This method does so for a particular row. 
   void update_entries_for_row(arma::fmat &other_entries, 
-    std::vector<std::vector<bool>> other_filled, int other_row, int fid) {
-    for (size_t col = 0; col < file_names.size(); col++) {
+    std::vector<std::vector<bool>> &other_filled, int other_row, int fid) {
+    for (auto it = file_names.begin(); it != file_names.end(); ++it) {
+      int col = it->second;
       bool other_filled_entry = other_filled.at(other_row).at(col);
       if (!other_filled_entry) {
         continue;
@@ -121,24 +116,22 @@ class <?=$className?> {
     }
 
   int get_row(int fid) {
-    for (size_t i = 0; i < fids.size(); i++) {
-      if (fids.at(i) == fid) {
-        return i;
-      }
+    try {
+      return fids.at(fid);
+    } catch (const std::out_of_range &oor) {
+      return -1;
     }
-    return -1;
   }
 
   int get_col(std::string file_name) {
-    for (size_t i = 0; i < file_names.size(); i++) {
-      if (file_names.at(i) == file_name) {
-        return i;
-      }
+    try {
+      return file_names.at(file_name);
+    } catch (const std::out_of_range &oor) {
+      return -1;
     }
-    return -1;
   }
 
-  std::vector<int> &get_fids() {
+  std::unordered_map<int, int> &get_fids() {
     return fids;
   }
 
@@ -165,11 +158,12 @@ class <?=$className?> {
   // entries matrix.
   void AddState(<?=$className?> &other) {
     std::cout << "Adding state" << std::endl;
-    std::vector<int> other_fids = other.get_fids();
+    std::unordered_map<int, int> other_fids = other.get_fids(); 
     arma::fmat other_entries = other.get_entries();
     std::vector<std::vector<bool>> other_filled = other.get_filled();
-    for (size_t row = 0; row < other_fids.size(); row++) {
-      int fid = other_fids.at(row);
+    // iterator is over pairs that signify (fid, row)
+    for (auto it = other_fids.begin(); it != other_fids.end(); ++it) {
+      int fid = it->first, row = it->second;
       update_entries_for_row(other_entries, other_filled, row, fid);
     }
   }
