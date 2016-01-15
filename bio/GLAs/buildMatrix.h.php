@@ -3,6 +3,7 @@ function Build_Matrix_Constant_State(array $t_args) {
   // Initialization of local variables from template arguments.
   $className = $t_args['className'];
   $states    = $t_args['states'];
+  $numFiles = $t_args['numFiles'];
 
   $states_ = array_combine(['Count'], $states);
 
@@ -30,11 +31,15 @@ function Build_Matrix_Constant_State(array $t_args) {
 class <?=$className?>Constant_State {
  private:
   long num_fids;
+  arma::fmat entries;
+
  public:
   friend class <?=$className?>;
 
   <?=$className?>Constant_State(<?=const_typed_ref_args($states_)?>) {
     Count.GetResult(num_fids);
+    entries.set_size(num_fids, <?=$numFiles?>);
+    entries.fill(0);
   }
 };
 <?
@@ -77,23 +82,20 @@ class <?=$className?>;
 
 <?  $constantState = lookupResource(
         "bio::Build_Matrix_Constant_State",
-        ['className' => $className, 'states' => $states]
+        ['className' => $className, 'states' => $states, 
+        'numFiles' => $num_files]
     ); ?>
 
 class <?=$className?> {
  private:
   // The constant state used to hold matrix.
-  const <?=$constantState?>& constant_state;
+  <?=$constantState?>& constant_state;
   long num_fids_processed;
   std::unordered_map<std::string, int> file_names; // file_name to column
-  arma::fmat entries;
-  std::vector<std::vector<bool>> filled;
-  std::unordered_map<int, int> fids; // fid to row
 
   // Update the entries matrix and also mark that we filled out this spot
   void set(int row_index, int col_index, float intensity) {
-    entries(row_index, col_index) = intensity;
-    filled.at(row_index).at(col_index) = true;
+    constant_state.entries(row_index, col_index) = intensity;
   }
 
   void init_col_names() {
@@ -104,26 +106,12 @@ class <?=$className?> {
 <?  } ?>
   }
 
-  // For each fid we could end up processing, enter a vector that has one entry
-  // for each file name. This matrix is the same size as entries.
-  void init_filled() {
-    std::vector<bool> new_row(<?=$num_files?>);
-    for (size_t j = 0; j < <?=$num_files?>; j++) {
-      new_row.at(j) = false;
-    }
-    filled.resize(constant_state.num_fids, new_row);
-  }
-
  public:
   <?=$className?>(const <?=$constantState?>& state)
-    : constant_state(state), 
+    : constant_state(const_cast<<?=$constantState?> &>(state)), 
       num_fids_processed(0),
-      file_names(<?=$num_files?>),
-      entries(constant_state.num_fids, <?=$num_files?>) {
-      entries.fill(0);
-      fids = std::unordered_map<int, int>(constant_state.num_fids);
+      file_names(<?=$num_files?>) {
       init_col_names();
-      init_filled();
   }
 
   int get_col(std::string file_name) {
@@ -132,18 +120,6 @@ class <?=$className?> {
     } catch (const std::out_of_range &oor) {
       return -1;
     }
-  }
-
-  std::unordered_map<int, int> &get_fids() {
-    return fids;
-  }
-
-  arma::fmat &get_entries() {
-    return entries;
-  }
-
-  std::vector<std::vector<bool>> &get_filled() {
-    return filled;
   }
 
   // if the fid was already entered for one column, use that row in the 
@@ -158,7 +134,6 @@ class <?=$className?> {
   // entries matrix.
   void AddState(<?=$className?> &other) {
     std::cout << "Adding state" << std::endl;
-    entries += other.entries;
   }
 
   void FinalizeState() {
@@ -166,11 +141,11 @@ class <?=$className?> {
   }
 
   const arma::Mat<float>& GetMatrix() const {
-    return entries;
+    return constant_state.entries;
   }
 
   void GetResult(<?=typed_ref_args($outputs_)?>) const {
-    matrix = entries;
+    matrix = constant_state.entries;
   }
 };
 
