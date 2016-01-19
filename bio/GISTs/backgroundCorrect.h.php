@@ -8,7 +8,10 @@ function Background_Correct($t_args, $outputs, $states) {
   $matrix_grabber = $from_matrix ? 
     $matrix.'.GetMatrix()' : 
     'std::get<0>('.$matrix.'.GetList()[0])';
-  $matrix_type = array_values($states)[0]->output()[$field_to_access];
+  $matrix_type = array_values($states)[0]->output()[0];
+  if ($field_to_access != '') {
+    $matrix_type = $matrix_type[$field_to_access];
+  }
   $inner_type = $matrix_type->get('type');
   $should_transpose = get_default($t_args, 'should_transpose', False);
   if ($field_to_access != '') {
