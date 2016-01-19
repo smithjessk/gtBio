@@ -15,3 +15,13 @@ ReadPMInfoFile <- function(path) {
   ReadCSV(path, c(ordered_fid = base::int, fid = base::int, 
     fsetid = base::int), header = TRUE)
 }
+
+BuildMatrix <- function(celFiles, infoFile) {
+  data <- ReadCEL(celFiles)
+  info <- ReadPMInfoFile(infoFile)
+  numFids <- Count(ReadPMInfoFile(infoFile))
+  joined <- Join(data, fid, info, fid)
+  builder <- GLA(bio::Build_Matrix, list = celFiles)
+  Aggregate(joined, builder, convert.exprs(quote(c(file_name, 
+    ordered_fid, fid, intensity))), c("Matrix"), states = numFids)
+}

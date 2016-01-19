@@ -30,14 +30,8 @@ colon_cancer_files = c(
                    "/home/jess/colon-cancer-data/9_5T.CEL"
 )
 
-infoFile <- "../scripts/pd.huex.1.0.st.v2.csv"
-data <- ReadCEL(c(celFile1))
-info <- ReadPMInfoFile(infoFile)
-numFids <- Count(ReadPMInfoFile(infoFile))
-joined <- Join(data, fid, info, fid)
-builder <- GLA(bio::Build_Matrix, files = list(celFile1))
-matrix <- Aggregate(joined, builder, convert.exprs(quote(c(file_name, 
-      ordered_fid, fid, intensity))), c("Matrix"), states = numFids)
+infoFile <- "/home/jess/git/gtBio/scripts/pd.huex.1.0.st.v2.csv"
+matrix <- BuildMatrix(c(celFile1), infoFile)
 x <- as.object(matrix)
 
 assert(x$content[[1]][[1]]$data[259507] == 2984)
