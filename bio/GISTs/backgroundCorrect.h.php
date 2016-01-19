@@ -77,11 +77,11 @@ class <?=$class_name?> {
 
     LocalScheduler(int index, int &round_num, int num_threads, 
       Matrix &matrix) :
-        thread_index(index),
-        finished_scheduling(false),
-        num_threads(num_threads),
-        round_num(round_num),
-        matrix(matrix) {}
+      thread_index(index),
+      finished_scheduling(false),
+      num_threads(num_threads),
+      round_num(round_num),
+      matrix(matrix) {}
 
     bool GetNextTask(Task& task) {
       bool ret = !finished_scheduling;
