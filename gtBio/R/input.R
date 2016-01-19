@@ -21,7 +21,7 @@ BuildMatrix <- function(celFiles, infoFile) {
   info <- ReadPMInfoFile(infoFile)
   numFids <- Count(ReadPMInfoFile(infoFile))
   joined <- Join(data, fid, info, fid)
-  builder <- GLA(bio::Build_Matrix, list = celFiles)
+  builder <- GLA(bio::Build_Matrix, files = list(celFiles))
   Aggregate(joined, builder, convert.exprs(quote(c(file_name, 
     ordered_fid, fid, intensity))), c("Matrix"), states = numFids)
 }

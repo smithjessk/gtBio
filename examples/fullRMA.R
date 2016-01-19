@@ -1,6 +1,7 @@
 library(gtBio)
 library(gtBase)
 
-f <- "../demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL"
-matrix <- RMA(f)
-View(matrix)
+file <- "../demoData/command-console/GSM1134065_GBX.DISC.PCA2.CEL"
+matrix <- BuildMatrix(c(file))
+corrected <- RMA(matrix)
+x <- as.object(corrected)

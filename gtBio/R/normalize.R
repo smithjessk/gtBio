@@ -1,10 +1,7 @@
 # For a reference, see the following links:
 # https://github.com/Bioconductor-mirror/affy/blob/master/R/justrma.R#L55
 # https://github.com/Bioconductor-mirror/affy/blob/4a732dd80fabbc8e7b008428dfdea57af6bd237b/src/rma2.c#L163
-RMA <- function(files) {
-  data <- ReadCEL(c(files))
-  state <- Gather(data)
-
+RMA <- function(matrix) {
   # This is equivalent to rma_bg_correct in just.rma
   correctedMatrix <- BackgroundCorrect(states = state, outputs = 
     c(corrected = Matrix), shouldTranspose = TRUE, 
