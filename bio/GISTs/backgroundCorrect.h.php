@@ -143,9 +143,9 @@ class <?=$class_name?> {
   void DoStep(Task& task, cGLA& gla) {
     double *params = (double *) malloc(3 * sizeof(double));
     rma_bg_parameters(matrix_as_doubles.memptr(), params, 
-      matrix_as_doubles.n_rows * matrix_as_doubles.n_rows, 1, 0);
+      matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, 0);
     rma_bg_adjust(matrix_as_doubles.memptr(), params, 
-      matrix_as_doubles.n_rows * matrix_as_doubles.n_rows, 1, 0);
+      matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, 0);
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {

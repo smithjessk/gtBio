@@ -70,7 +70,7 @@ class <?=$class_name?> {
 
     bool GetNextTask(Task& task) {
       bool ret = !finished_scheduling;
-      long count = (round_num == 1) ? matrix.n_cols : matrix.n_rows;
+      long count = (round_num % 2 == 1) ? matrix.n_cols : matrix.n_rows;
       task.start_index = thread_index * count / num_threads;
       task.end_index = (thread_index + 1) * count / num_threads - 1;
       finished_scheduling = true;
