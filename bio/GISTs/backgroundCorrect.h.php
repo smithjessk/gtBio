@@ -125,27 +125,29 @@ class <?=$class_name?> {
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
     arma::uword n_cols = matrix.n_cols;
-    this->num_threads = 1;
+    this->num_threads = std::min(suggested_num_workers, n_cols);
     std::printf("Beginning round %d with %d workers.\n", round_num, 
       this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
     for (int counter = 0; counter < this->num_threads; counter++) {
       worker = std::make_pair(new LocalScheduler(counter, round_num, 
         this->num_threads, matrix), new cGLA());
-      workers.push_back(worker); 
+      workers.push_back(worker);
     }
     // Necessary because Armadillo stores column-by-column but the linked RMA
     // functions expect row-stored values
-    matrix = matrix.t(); // Possibly taken care of by Collect?
+    matrix = matrix.t();
   }
 
   // TODO: How to extract a pointer to the data? 
   void DoStep(Task& task, cGLA& gla) {
-    double *params = (double *) malloc(3 * sizeof(double));
-    rma_bg_parameters(matrix_as_doubles.memptr(), params, 
-      matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, 0);
-    rma_bg_adjust(matrix_as_doubles.memptr(), params, 
-      matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, 0);
+    for (size_t index = task.start_index; index < task.end_index; index++) {
+      double *params = (double *) malloc(3 * sizeof(double));
+      rma_bg_parameters(matrix_as_doubles.memptr(), params, 
+        matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, index);
+      rma_bg_adjust(matrix_as_doubles.memptr(), params, 
+        matrix_as_doubles.n_rows, matrix_as_doubles.n_cols, index);  
+    }
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
