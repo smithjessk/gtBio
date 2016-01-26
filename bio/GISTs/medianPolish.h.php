@@ -1,8 +1,17 @@
+// Median polish could take the whole matrix and then assign the various 
+// probesets to the threads. For simplicity, a round-robin distribution would
+// work. 
+// Within each worker, it should probably be fine to use one thread for all of
+// the work. The effective datasize over which every worker will be operating 
+// will be of size (number of chips) * (number of rows for this probset). So 
+// realistically like maybe 5, 10 thousand?
+
 <?
 function Median_Polish($t_args, $outputs, $states) {
     $class_name = generate_name('Median_Polish');
     $cgla_name = generate_name('ConvergenceGLA');
     $matrix = array_keys($states)[0];
+    $probeset_map = array_keys($states)[1];
     $field_to_access = get_default($t_args, 'field_to_access', '');
     if ($field_to_access != '') {
       $field_to_access = '.' + $field_to_access;
@@ -27,6 +36,10 @@ function Median_Polish($t_args, $outputs, $states) {
     ];
 ?>
 
+
+// Found in preprocessCore
+extern "C" void MedianPolish(double *data, size_t rows, size_t cols, int *cur_rows, double *results, size_t nprobes, double *resultsSE)
+
 class <?=$cgla_name?> {
  public:
   int round_num;
@@ -41,10 +54,8 @@ class <?=$cgla_name?> {
       other.converging_this_round;
   }
 
-  // TODO: Add better converging conditions
   bool ShouldIterate() {
-    std::printf("Returning %d for ShouldIterate because round_num = %d\n", round_num < 5, round_num);
-    return round_num < 5;
+    return false;
   }
 };
 
@@ -55,10 +66,10 @@ class <?=$class_name?> {
   using Inner = <?=$inner_type?>;
   using Matrix = arma::Mat<Inner>;
   using cGLA = <?=$cgla_name?>;
+  using Map = std::unordered_map<int, arma::vec<int>>;
 
   struct Task {
-    long start_index; // Which row or column this local scheduler starts at
-    long end_index; // Which row or column it ends at. Inclusive bound.
+    int fsetid;
   };
 
   struct LocalScheduler {
@@ -67,24 +78,22 @@ class <?=$class_name?> {
     int num_threads;
     int &round_num;
     Matrix &matrix;
+    Map &probeset_map;
+    int num_probesets;
 
     LocalScheduler(int index, int &round_num, int num_threads, 
-      Matrix &matrix) :
+      Matrix &matrix, Map &probeset_map, int num_probesets) :
         thread_index(index),
         finished_scheduling(false),
         num_threads(num_threads),
         round_num(round_num),
-        matrix(matrix) {}
+        matrix(matrix),
+        probeset_map(probeset_map),
+        num_probesets(num_probesets); {}
 
     bool GetNextTask(Task& task) {
       bool ret = !finished_scheduling;
-      long count;
-      if (round_num % 2 == 1) {
-        count = matrix.n_rows;
-      } else {
-        count = matrix.n_cols;
-      }
-      task.start_index = thread_index * count / num_threads;
+      task.start_index = thread_index * num_probesets / num_threads;
       task.end_index = (thread_index + 1) * count / num_threads - 1;
       finished_scheduling = true;
       return ret;
@@ -95,30 +104,10 @@ class <?=$class_name?> {
   using WorkUnits = std::vector<WorkUnit>;
 
  private:
-  // Without a limit on the number of iterations, the process could never end.
   int round_num;
   int num_threads;
   Matrix matrix;
-
-  void RowPolish(Task& task, cGLA& gla) {
-    int start = task.start_index;
-    int end = task.end_index;
-    arma::Col<Inner> med_val = 
-      median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    for (size_t i = 0; i < end - start; i++) {
-      matrix.row(start + i) -= med_val(i);
-    }
-  }
-
-  void ColPolish(Task& task, cGLA& gla) {
-    int start = task.start_index;
-    int end = task.end_index;
-    arma::Row<Inner> med_val = 
-      median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    for (size_t i = 0; i < end - start; i++) {
-      matrix.col(start + i) -= med_val(i);
-    }
-  }
+  Map probeset_map;
 
  public:
   <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
@@ -138,31 +127,32 @@ class <?=$class_name?> {
         <? } ?>
 <? } ?> 
     round_num = 0;
+    probeset_map = <?=$probeset_map?>.GetResult();
   }
 
-  // Advance the round number and distribute work among the threads
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
-    arma::uword n_rows = matrix.n_rows;
-    arma::uword n_cols = matrix.n_cols;
-    int min_dimension = std::min(n_rows, n_cols);
-    this->num_threads = std::min(min_dimension, suggested_num_workers);
-    std::printf("Beginning round %d with %d workers.\n", round_num, 
-      this->num_threads);
-    std::pair<LocalScheduler*, cGLA*> worker;
+    this->num_threads = std::min(num_probesets, suggested_num_workers);
     for (int counter = 0; counter < this->num_threads; counter++) {
-      worker = std::make_pair(new LocalScheduler(counter, round_num, 
-        this->num_threads, matrix), new cGLA(round_num));
-      workers.push_back(worker);
+      LocalScheduler *ls = new LocalScheduler(counter, round_num, 
+        this->num_threads, matrix, probeset_map);
+      cGLA *cg = new cGLA(round_num);
+      workers.push_back(std::make_pair(ls, cg));
     }
   }
 
   // If round number is odd, do a row polish. Otherwise, do a column polish.
   void DoStep(Task& task, cGLA& gla) {
-    if (round_num % 2 == 1) {
-      RowPolish(task, gla);
-    } else {
-      ColPolish(task, gla);
+    for (j = 0; j < num_probesets; j++) {
+      cur_rows = INTEGER_POINTER(VECTOR_ELT(R_rowIndexList,j));
+      double *cur_rows = &probeset_map.at(j)[0];
+      double *buffer = (double *) malloc(matrix.n_col * sizeof(double));
+      double *other_buffer = (double *) malloc(matrix.n_col * sizeof(double));
+      int num_probes = probeset_map.at(j).size();
+      MedianPolish(matrix.memptr(), matrix.n_row, matrix.n_col, cur_rows, buffer, num_probes, other_buffer);
+      for (i = 0; i < matrix.n_col; i++) {
+        results[i * num_probesets + j] = buffer[i];
+      }
     }
   }
 
