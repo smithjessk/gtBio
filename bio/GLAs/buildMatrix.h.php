@@ -1,31 +1,25 @@
 <?
 function Build_Matrix_Constant_State(array $t_args) {
-  // Initialization of local variables from template arguments.
-  $className = $t_args['className'];
-  $states    = $t_args['states'];
-  $numFiles = $t_args['numFiles'];
+    $className = $t_args['className'];
+    $states    = $t_args['states'];
+    $numFiles = $t_args['numFiles'];
 
-  $states_ = array_combine(['Count'], $states);
+    $states_ = array_combine(['Count'], $states);
 
-  // Values to be used in C++ code.
-  $state = array_keys($states)[0];
-  $class = $states[$state];
+    $sys_headers = ['armadillo'];
+    $user_headers = [];
+    $lib_headers = [];
+    $libraries = ['armadillo'];
 
-  // Return values.
-  $sys_headers = ['armadillo'];
-  $user_headers = [];
-  $lib_headers = [];
-  $libraries = ['armadillo'];
-
-  $identifier = [
-    'kind'           => 'RESOURCE',
-    'name'           => $className . 'Constant_State',
-    'system_headers' => $sys_headers,
-    'user_headers'   => $user_headers,
-    'lib_headers'    => $lib_headers,
-    'libraries'      => $libraries,
-    'configurable'   => false,
-  ];
+    $identifier = [
+        'kind'           => 'RESOURCE',
+        'name'           => $className . 'Constant_State',
+        'system_headers' => $sys_headers,
+        'user_headers'   => $user_headers,
+        'lib_headers'    => $lib_headers,
+        'libraries'      => $libraries,
+        'configurable'   => false,
+    ];
 ?>
 
 class <?=$className?>Constant_State {
@@ -46,36 +40,37 @@ class <?=$className?>Constant_State {
   return $identifier;
 }
 
-function Build_Matrix(array $t_args, array $inputs, array $outputs, array $states) {
-  $className = generate_name('BuildMatrix');
-  $inputs_ = array_combine(['file_name', 'ordered_fid', 'fid', 'intensity'], 
-    $inputs);
-  $output_type = [lookupType('statistics::Variable_Matrix', 
-    ['type' => lookupType('float')])];
-  $outputs_ = array_combine(['matrix'], $output_type);
-  $file_names = $t_args['files'];
-  $num_files = count($file_names);
-  $sys_headers  = ['armadillo', 'unordered_map'];
-  $user_headers = [];
-  $lib_headers  = [];
-  $libraries    = ['armadillo'];
-  $properties   = ['matrix', 'tuples'];
-  $extra        = [];
-  $identifier = [
-    'kind'              => 'GLA',
-    'name'              => $className,
-    'system_headers'    => $sys_headers,
-    'user_headers'      => $user_headers,
-    'lib_headers'       => $lib_headers,
-    'libraries'         => $libraries,
-    'iterable'          => false,
-    'input'             => $inputs,
-    'output'            => $output_type,
-    'result_type'       => 'single',
-    'finalize_as_state' => true,
-    'properties'        => $properties,
-    'extra'             => $extra,
-  ];
+function Build_Matrix(array $t_args, array $inputs, array $outputs, 
+    array $states) {
+    $className = generate_name('Build_Matrix');
+    $inputs_ = array_combine(['file_name', 'ordered_fid', 'fid', 'intensity'], 
+        $inputs);
+    $output_type = [lookupType('statistics::Variable_Matrix', 
+        ['type' => lookupType('float')])];
+    $outputs_ = array_combine(['matrix'], $output_type);
+    $file_names = $t_args['files'];
+    $num_files = count($file_names);
+    $sys_headers  = ['armadillo', 'unordered_map'];
+    $user_headers = [];
+    $lib_headers  = [];
+    $libraries    = ['armadillo'];
+    $properties   = ['matrix', 'tuples'];
+    $extra        = [];
+    $identifier = [
+        'kind'              => 'GLA',
+        'name'              => $className,
+        'system_headers'    => $sys_headers,
+        'user_headers'      => $user_headers,
+        'lib_headers'       => $lib_headers,
+        'libraries'         => $libraries,
+        'iterable'          => false,
+        'input'             => $inputs,
+        'output'            => $output_type,
+        'result_type'       => 'single',
+        'finalize_as_state' => true,
+        'properties'        => $properties,
+        'extra'             => $extra,
+    ];
 ?>
 
 class <?=$className?>;
@@ -134,6 +129,7 @@ class <?=$className?> {
   // entries matrix.
   void AddState(<?=$className?> &other) {
     std::cout << "Adding state" << std::endl;
+    entries += other.entries;
   }
 
   void FinalizeState() {
