@@ -12,16 +12,17 @@ ReadCEL <- function(paths, outputs, ...) {
 }
 
 ReadPMInfoFile <- function(path) {
-  ReadCSV(path, c(ordered_fid = base::int, fid = base::int, 
-    fsetid = base::int), header = TRUE)
+  attributes <- c(ordered_fid = base::int, ordered_fsetid = base::int, 
+    fid = base::int, fsetid = base::int)
+  ReadCSV(path, , header = TRUE)
 }
 
 BuildMatrix <- function(celFiles, infoFile) {
   data <- ReadCEL(celFiles)
   info <- ReadPMInfoFile(infoFile)
-  numFids <- Count(ReadPMInfoFile(infoFile))
+  numFIDs <- Count(ReadPMInfoFile(infoFile))
   joined <- Join(data, fid, info, fid)
   builder <- GLA(bio::Build_Matrix, files = list(celFiles))
-  Aggregate(joined, builder, convert.exprs(quote(c(file_name, 
-    ordered_fid, fid, intensity))), c("Matrix"), states = numFids)
+  attributes <- convert.exprs(quote(c(file_name, ordered_fid, fid, intensity)))
+  Aggregate(joined, builder, attributes, c("Matrix"), states = numFIDs)
 }
