@@ -180,8 +180,8 @@ class <?=$class_name?> {
     if (num_produced == matrix.n_elem) {
       return false;
     }
-    int row_index = num_produced / matrix.n_rows;
-    int col_index = num_produced % matrix.n_rows;
+    int row_index = num_produced / matrix.n_cols;
+    int col_index = num_produced % matrix.n_cols;
     num_produced++;
     file_name = file_names.at(col_index);
     ordered_fid = row_index;

@@ -13,7 +13,7 @@ function Median_Polish(array $t_args, array $inputs, array $outputs,
     $file_names = $t_args["files"];
     $num_files = sizeof($file_names);
 
-    $sys_headers  = ['armadillo', 'unordered_map'];
+    $sys_headers  = ['armadillo', 'unordered_map', 'sstream', 'stdexcept'];
     $user_headers = [];
     $lib_headers  = [];
     $libraries    = ['armadillo'];
@@ -46,6 +46,7 @@ class <?=$className?> {
   // Map of file name to column probeset_matrix
   std::vector<std::string> file_names;
   std::vector<float> intensities;
+  int max_ordered_fsetid;
 
   void resize_matrix(int num_rows) {
     int old_num_rows = probeset_matrix.n_rows;
@@ -80,16 +81,18 @@ class <?=$className?> {
     : probeset_matrix(50, <?=$num_files?>),
     num_probes_encountered(0),
     num_produced(0),
-    intensities(<?=$num_files?>) {
+    intensities(<?=$num_files?>),
+    max_ordered_fsetid(0) {
       init_file_names();
       probeset_matrix.fill(0);
   }
 
   void AddItem(<?=const_typed_ref_args($inputs_)?>) {
     this->fsetid = fsetid;
+    max_ordered_fsetid = std::max(max_ordered_fsetid, ordered_fsetid);
     num_probes_encountered++;
-    if (num_probes_encountered > probeset_matrix.n_rows) {
-      resize_matrix(1.2 * probeset_matrix.n_rows);
+    if (ordered_fsetid >= probeset_matrix.n_rows) {
+      resize_matrix(1.2 * ordered_fsetid);
     }
     int col_index = get_column_index(file_name.ToString());
     probeset_matrix(ordered_fsetid, col_index) = intensity;
@@ -100,6 +103,14 @@ class <?=$className?> {
   }
 
   void Finalize() {
+    if (max_ordered_fsetid != num_probes_encountered) {
+      std::stringstream ss;
+      ss << "Number of probes encountered was not equal to the ";
+      ss << "max ordered_fsetid";
+      std::string msg;
+      ss >> msg;
+      throw std::logic_error(msg);
+    }
     resize_matrix(num_probes_encountered);
     probeset_matrix = log2(probeset_matrix);
     arma::mat temp_mat = arma::conv_to<arma::mat>::from(probeset_matrix);

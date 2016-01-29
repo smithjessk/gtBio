@@ -74,19 +74,21 @@ class <?=$class_name?> {
     int num_threads;
     int &round_num;
     Matrix &matrix;
+    int num_files;
 
     LocalScheduler(int index, int &round_num, int num_threads, 
-      Matrix &matrix) :
+                   Matrix &matrix, int num_files) :
       thread_index(index),
       finished_scheduling(false),
       num_threads(num_threads),
       round_num(round_num),
-      matrix(matrix) {}
+      matrix(matrix),
+      num_files(num_files) {}
 
     bool GetNextTask(Task& task) {
       bool ret = !finished_scheduling;
-      task.start_index = thread_index * matrix.n_cols / num_threads;
-      task.end_index = (thread_index + 1) * matrix.n_cols / num_threads - 1;
+      task.start_index = thread_index * num_files / num_threads;
+      task.end_index = (thread_index + 1) * num_files / num_threads - 1;
       finished_scheduling = true;
       return ret;
     }
@@ -129,8 +131,10 @@ class <?=$class_name?> {
       this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
     for (int counter = 0; counter < this->num_threads; counter++) {
-      worker = std::make_pair(new LocalScheduler(counter, round_num, 
-        this->num_threads, matrix), new cGLA());
+      LocalScheduler *ls = new LocalScheduler(counter, round_num, num_threads,
+                                              matrix, matrix.n_cols);
+      cGLA *cg = new cGLA();
+      worker = std::make_pair(ls, cg);
       workers.push_back(worker);
     }
     // Necessary because Armadillo stores column-by-column but the linked RMA
