@@ -126,7 +126,7 @@ class <?=$className?> {
   // entries matrix.
   void AddState(<?=$className?> &other) {
     std::cout << "Adding state" << std::endl;
-    entries += other.entries;
+    constant_state.entries += other.constant_state.entries;
   }
 
   void FinalizeState() {

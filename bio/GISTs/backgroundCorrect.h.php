@@ -121,10 +121,9 @@ class <?=$class_name?> {
     matrix_as_doubles = arma::conv_to<arma::mat>::from(matrix);
   }
 
-  // TODO: Extract perfect match probes
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
     round_num++;
-    arma::uword n_cols = matrix.n_cols;
+    int n_cols = (int) matrix.n_cols;
     this->num_threads = std::min(suggested_num_workers, n_cols);
     std::printf("Beginning round %d with %d workers.\n", round_num, 
       this->num_threads);

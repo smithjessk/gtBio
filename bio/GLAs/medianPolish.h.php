@@ -35,17 +35,17 @@ function Median_Polish(array $t_args, array $inputs, array $outputs,
     ];
 ?>
 
-class <?=$className?>;
+extern "C" void median_polish_no_copy(double *data, size_t rows, size_t cols,
+                                      double *results, double *resultsSE);
 
 class <?=$className?> {
  private:
-  // Columns are files, rows are probes in this probeset
-  arma::Mat<float> probeset_matrix;
   int num_probes_encountered;
   int num_produced;
-  std::string fsetid;
+  int fsetid;
   // Map of file name to column probeset_matrix
-  std::unordered_map<std::string, int> file_names; 
+  std::vector<std::string> file_names;
+  std::vector<float> intensities;
 
   void resize_matrix(int num_rows) {
     int old_num_rows = probeset_matrix.n_rows;
@@ -58,51 +58,56 @@ class <?=$className?> {
   void init_file_names() {
     int column = 0;
     <?  foreach ($file_names as &$file_name) { ?>
-      file_names["<?=$file_name?>"] = column;
+      file_names.push_back("<?=$file_name?>");
       column++;
     <?  } ?>
   }
 
   int get_column_index(std::string file_name) {
-    return file_names.at(file_name);
+    for (size_t index = 0; index < file_name.size(); index++) {
+      if (file_name == file_names.at(index)) {
+        return index;
+      }
+    }
+    return -1;
   }
 
  public:
+  // Columns are files, rows are probes in this probeset
+  arma::Mat<float> probeset_matrix;
+
   <?=$className?>()
     : probeset_matrix(50, <?=$num_files?>),
     num_probes_encountered(0),
-    num_produced(0) {
+    num_produced(0),
+    intensities(<?=$num_files?>) {
       init_file_names();
       probeset_matrix.fill(0);
-    }
-  }
-
-  arma::Mat<float> &get_probeset_matrix() {
-    return *(this->probeset_matrix);
   }
 
   void AddItem(<?=const_typed_ref_args($inputs_)?>) {
     this->fsetid = fsetid;
     num_probes_encountered++;
     if (num_probes_encountered > probeset_matrix.n_rows) {
-      resize_matrix(1.2 * probeset_matrix.n_rows, <?=$num_files?>);
+      resize_matrix(1.2 * probeset_matrix.n_rows);
     }
     int col_index = get_column_index(file_name.ToString());
     probeset_matrix(ordered_fsetid, col_index) = intensity;
   }
 
   void AddState(<?=$className?> &other) {
-    this->probeset_matrix += other.get_probeset_matrix();
+    this->probeset_matrix += other.probeset_matrix;
   }
 
-
-  void FinalizeState() {
-    resize_matrix(num_probes_encountered, <?=$num_files?>);
+  void Finalize() {
+    resize_matrix(num_probes_encountered);
     probeset_matrix = log2(probeset_matrix);
+    arma::mat temp_mat = arma::conv_to<arma::mat>::from(probeset_matrix);
     double *results = (double *) malloc(sizeof(double) * <?=$num_files?>);
     double *resultsSE = (double *) malloc(sizeof(double) * <?=$num_files?>);
-    median_polish_no_copy(probeset_matrix.memptr(), num_probes_encountered, 
+    median_polish_no_copy(temp_mat.memptr(), num_probes_encountered, 
       <?=$num_files?>, results, resultsSE);
+    intensities.assign(results, results + sizeof(double) * <?=$num_files?>);
     std::cout << "<?=$className?> finished" << std::endl;
   }
 
@@ -110,7 +115,7 @@ class <?=$className?> {
     if (num_produced == <?=$num_files?>) {
       return false;
     }
-    file_name = files_names.at(num_produced);
+    file_name = file_names.at(num_produced);
     intensity = intensities.at(num_produced);
     fsetid = this->fsetid;
     return true;

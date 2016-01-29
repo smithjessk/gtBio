@@ -22,7 +22,7 @@ function Quantile_Normalize($t_args, $outputs, $states) {
         'libraries'       => ['armadillo'],
         'iterable'        => true,
         'output'          => $output_types,
-        'result_type'     => 'fragment',
+        'result_type'     => 'multi',
         'extras'          => [],
     ];
 ?>
@@ -89,7 +89,7 @@ class <?=$class_name?> {
   Matrix matrix;
   arma::umat indices;
   arma::mat copy_of_data; // Updated after the second round
-  std::vector<string> file_names;
+  std::vector<std::string> file_names;
 
   /**
    * Sort a particular column in ascending order.
@@ -120,11 +120,10 @@ class <?=$class_name?> {
     }
   }
 
-  void init_col_names() {
+  void init_file_names() {
     int column = 0;
     <?  foreach ($file_names as &$file_name) { ?>
-      file_names["<?=$file_name?>"] = column;
-      column++;
+      file_names.push_back("<?=$file_name?>");
     <?  } ?>
   }
 
@@ -134,7 +133,7 @@ class <?=$class_name?> {
     round_num = 0;
     num_produced = 0;
     indices = arma::umat(matrix.n_rows, matrix.n_cols);
-    init_col_names();
+    init_file_names();
   }
 
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
@@ -174,6 +173,8 @@ class <?=$class_name?> {
       }
     }
   }
+
+  void Finalize() {}
 
   bool GetNextResult(<?=typed_ref_args($outputs_)?>) {
     if (num_produced == matrix.n_elem) {
