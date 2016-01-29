@@ -17,13 +17,13 @@ normalized <- QuantileNormalize(
            states = corrected,
            outputs = c(file_name, ordered_fid, intensity),
            should_transpose = FALSE,
-           files = files)
+           files = list(files))
 
 info <- ReadPMInfoFile(infoFile)
 joined <- Join(normalized, ordered_fid, info, ordered_fid)
 output <- GroupBy(
        joined,
        ordered_fsetid,
-       MedianPolish())
+       MedianPolish(files = list(files)))
 
 x <- as.object(Count(output))

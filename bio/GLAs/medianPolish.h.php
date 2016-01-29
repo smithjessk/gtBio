@@ -4,16 +4,19 @@ function Median_Polish(array $t_args, array $inputs, array $outputs,
     $className = generate_name('Median_Polish');
     $inputs_ = array_combine(['file_name', 'ordered_fid', 'ordered_fsetid',
       'fid', 'fsetid', 'intensity'], $inputs);
-    $output_types = [lookupType('base::string'), lookupType('fsetid'),
-      lookupType('float')];
+    $output_types = [lookupType('base::string'), lookupType('base::int'),
+      lookupType('base::int')];
     $outputs_ = array_combine(['file_name', 'intensity', 'fsetid'],
       $output_types);
+
+    $file_names = $t_args["files"];
+    $num_files = sizeof($file_names);
 
     $sys_headers  = ['armadillo', 'unordered_map'];
     $user_headers = [];
     $lib_headers  = [];
     $libraries    = ['armadillo'];
-    $properties   = ['matrix', 'tuples'];
+    $properties   = ['tuples'];
     $extra        = [];
     $identifier = [
         'kind'              => 'GLA',
@@ -24,7 +27,7 @@ function Median_Polish(array $t_args, array $inputs, array $outputs,
         'libraries'         => $libraries,
         'iterable'          => false,
         'input'             => $inputs,
-        'output'            => $output_type,
+        'output'            => $output_types,
         'result_type'       => 'fragment',
         'finalize_as_state' => true,
         'properties'        => $properties,
@@ -41,6 +44,8 @@ class <?=$className?> {
   int num_probes_encountered;
   int num_produced;
   std::string fsetid;
+  // Map of file name to column probeset_matrix
+  std::unordered_map<std::string, int> file_names; 
 
   void resize_matrix(int num_rows) {
     int old_num_rows = probeset_matrix.n_rows;
@@ -50,11 +55,24 @@ class <?=$className?> {
     }
   }
 
+  void init_file_names() {
+    int column = 0;
+    <?  foreach ($file_names as &$file_name) { ?>
+      file_names["<?=$file_name?>"] = column;
+      column++;
+    <?  } ?>
+  }
+
+  int get_column_index(std::string file_name) {
+    return file_names.at(file_name);
+  }
+
  public:
   <?=$className?>()
     : probeset_matrix(50, <?=$num_files?>),
     num_probes_encountered(0),
     num_produced(0) {
+      init_file_names();
       probeset_matrix.fill(0);
     }
   }
@@ -69,7 +87,7 @@ class <?=$className?> {
     if (num_probes_encountered > probeset_matrix.n_rows) {
       resize_matrix(1.2 * probeset_matrix.n_rows, <?=$num_files?>);
     }
-    int col_index = get_col(file_name.ToString());
+    int col_index = get_column_index(file_name.ToString());
     probeset_matrix(ordered_fsetid, col_index) = intensity;
   }
 
@@ -100,7 +118,6 @@ class <?=$className?> {
 };
 
 <?
-    $identifier['generated_state'] = $constantState;
     return $identifier;
 }
 ?>

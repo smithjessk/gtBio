@@ -33,8 +33,8 @@ QuantileNormalize <- function(outputs, states, ...) {
   Transition(gist, outputs, states)
 }
 
-MedianPolish <- function(data) {
-  gla <- GLA(bio::Median_Polish)
+MedianPolish <- function(data, ...) {
+  gla <- GLA(bio::Median_Polish, ...)
   inputs <- convert.exprs(quote(c(file_name, ordered_fid, ordered_fsetid, 
     fid, fsetid, intensity)))
   outputs <- convert.atts(quote(c(file_name, intensity, fsetid)))

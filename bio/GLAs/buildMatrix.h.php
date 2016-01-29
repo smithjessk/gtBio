@@ -1,3 +1,4 @@
+
 <?
 function Build_Matrix_Constant_State(array $t_args) {
     $className = $t_args['className'];
@@ -93,7 +94,7 @@ class <?=$className?> {
     constant_state.entries(row_index, col_index) = intensity;
   }
 
-  void init_col_names() {
+  void init_file_names() {
     int column = 0;
 <?  foreach ($file_names as &$file_name) { ?>
       file_names["<?=$file_name?>"] = column;
@@ -101,7 +102,7 @@ class <?=$className?> {
 <?  } ?>
   }
 
-  int get_col(std::string file_name) {
+  int get_column_index(std::string file_name) {
     return file_names.at(file_name);
   }
 
@@ -110,14 +111,14 @@ class <?=$className?> {
     : constant_state(const_cast<<?=$constantState?> &>(state)),
       num_fids_processed(0),
       file_names(<?=$num_files?>) {
-      init_col_names();
+      init_file_names();
   }
 
   // if the fid was already entered for one column, use that row in the
   // appropriate column. Else append it as a new row.
   void AddItem(<?=const_typed_ref_args($inputs_)?>) {
     num_fids_processed++;
-    int col_index = get_col(file_name.ToString());
+    int col_index = get_column_index(file_name.ToString());
     constant_state.entries(ordered_fid, col_index) = intensity;
   }
 

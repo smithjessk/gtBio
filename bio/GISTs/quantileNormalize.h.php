@@ -21,7 +21,7 @@ function Quantile_Normalize($t_args, $outputs, $states) {
         'system_headers'  => ['armadillo', 'algorithm'],
         'libraries'       => ['armadillo'],
         'iterable'        => true,
-        'output'          => $output,
+        'output'          => $output_types,
         'result_type'     => 'fragment',
         'extras'          => [],
     ];
