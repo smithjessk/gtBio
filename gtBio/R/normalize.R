@@ -13,7 +13,7 @@ RMA <- function(matrix) {
     c(normalized = Matrix), should_transpose = FALSE)
 
   # Equivalent to R_subColSummarize_medianpolish_log
-  MedianPolish(states = normalizedMatrix, outputs = 
+  MedianPolish(states = c(normalizedMatrix), outputs = 
     c(polished = Matrix), should_transpose = FALSE)
 }
 
@@ -33,10 +33,10 @@ QuantileNormalize <- function(outputs, states, ...) {
   Transition(gist, outputs, states)
 }
 
-MedianPolish <- function(outputs, states, ...) {
-  outputs <- substitute(outputs)
-  check.atts(outputs)
-  outputs <- convert.atts(outputs)
-  gist <- GIST(bio::Median_Polish, ...)
-  Transition(gist, outputs, states)
+MedianPolish <- function(data) {
+  gla <- GLA(bio::Median_Polish)
+  inputs <- convert.exprs(quote(c(file_name, ordered_fid, ordered_fsetid, 
+    fid, fsetid, intensity)))
+  outputs <- convert.atts(quote(c(file_name, intensity, fsetid)))
+  Aggregate(data, gla, inputs, outputs)
 }

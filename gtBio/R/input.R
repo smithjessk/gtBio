@@ -12,9 +12,8 @@ ReadCEL <- function(paths, outputs, ...) {
 }
 
 ReadPMInfoFile <- function(path) {
-  attributes <- c(ordered_fid = base::int, ordered_fsetid = base::int, 
-    fid = base::int, fsetid = base::int)
-  ReadCSV(path, , header = TRUE)
+  ReadCSV(path, c(ordered_fid = base::int, ordered_fsetid = base::int, 
+    fid = base::int, fsetid = base::int), header = TRUE)
 }
 
 BuildMatrix <- function(celFiles, infoFile) {

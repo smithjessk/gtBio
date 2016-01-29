@@ -13,12 +13,17 @@ matrix <- BuildMatrix(files, infoFile)
 corrected <- BackgroundCorrect(states = matrix, outputs = 
     c(corrected = Matrix), should_transpose = FALSE, from_matrix = TRUE)
 
-normalizedOutputs <- convert.exprs(quote(c(file_name, ordered_fid, intensity)))
-normalized <- QuantileNormalize(states = corrected, 
-  outputs = normalizedOutputs, should_transpose = FALSE, files = files)
+normalized <- QuantileNormalize(
+           states = corrected,
+           outputs = c(file_name, ordered_fid, intensity),
+           should_transpose = FALSE,
+           files = files)
 
 info <- ReadPMInfoFile(infoFile)
-joined <- Join(normalized, fid, info, fid)
-output <- GroupBy(joined, c(ordered_fsetid), MedianPolish))
+joined <- Join(normalized, ordered_fid, info, ordered_fid)
+output <- GroupBy(
+       joined,
+       ordered_fsetid,
+       MedianPolish())
 
-x <- Count(output)
+x <- as.object(Count(output))
