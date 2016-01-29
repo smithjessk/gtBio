@@ -40,12 +40,12 @@ class <?=$className?>Constant_State {
   return $identifier;
 }
 
-function Build_Matrix(array $t_args, array $inputs, array $outputs, 
+function Build_Matrix(array $t_args, array $inputs, array $outputs,
     array $states) {
     $className = generate_name('Build_Matrix');
-    $inputs_ = array_combine(['file_name', 'ordered_fid', 'fid', 'intensity'], 
+    $inputs_ = array_combine(['file_name', 'ordered_fid', 'fid', 'intensity'],
         $inputs);
-    $output_type = [lookupType('statistics::Variable_Matrix', 
+    $output_type = [lookupType('statistics::Variable_Matrix',
         ['type' => lookupType('float')])];
     $outputs_ = array_combine(['matrix'], $output_type);
     $file_names = $t_args['files'];
@@ -107,13 +107,13 @@ class <?=$className?> {
 
  public:
   <?=$className?>(const <?=$constantState?>& state)
-    : constant_state(const_cast<<?=$constantState?> &>(state)), 
+    : constant_state(const_cast<<?=$constantState?> &>(state)),
       num_fids_processed(0),
       file_names(<?=$num_files?>) {
       init_col_names();
   }
 
-  // if the fid was already entered for one column, use that row in the 
+  // if the fid was already entered for one column, use that row in the
   // appropriate column. Else append it as a new row.
   void AddItem(<?=const_typed_ref_args($inputs_)?>) {
     num_fids_processed++;
@@ -121,7 +121,7 @@ class <?=$className?> {
     constant_state.entries(ordered_fid, col_index) = intensity;
   }
 
-  // For every entry that other has set, take that value and put it in our 
+  // For every entry that other has set, take that value and put it in our
   // entries matrix.
   void AddState(<?=$className?> &other) {
     std::cout << "Adding state" << std::endl;

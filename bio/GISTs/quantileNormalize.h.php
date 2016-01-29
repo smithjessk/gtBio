@@ -7,22 +7,23 @@ function Quantile_Normalize($t_args, $outputs, $states) {
     if ($field_to_access != '') {
       $field_to_access = '.' + $field_to_access;
     }
+    $file_names = $t_args['files'];
     $matrix_type = array_values($states)[0];
     $inner_type = $matrix_type->get('type');
     $should_transpose = get_default($t_args, 'should_transpose', False);
-    $output = array_combine(array_keys($outputs), [
-      lookupType('statistics::Variable_Matrix', ['type' => $inner_type]
-    )]);
+    $output_names = ['file_name', 'ordered_fid', 'intensity'];
+    $output_types = [lookupType('base::string'), lookupType('base::int'), 
+      lookupType('base::float')];
+    $outputs_ = array_combine($output_names, $output_types);
     $identifier = [
-        'kind'  => 'GIST',
-        'name'  => $class_name,
-        'system_headers' => ['armadillo', 'algorithm'],
-        'libraries'     => ['armadillo'],
-        'iterable'      => true,
-        'output'        => $output,
-        'result_type'   => 'single',
-        'properties'      => ['matrix'],
-        'extras'          => $matrix_type->extras(),
+        'kind'            => 'GIST',
+        'name'            => $class_name,
+        'system_headers'  => ['armadillo', 'algorithm'],
+        'libraries'       => ['armadillo'],
+        'iterable'        => true,
+        'output'          => $output,
+        'result_type'     => 'fragment',
+        'extras'          => [],
     ];
 ?>
 
@@ -84,14 +85,17 @@ class <?=$class_name?> {
  private:
   int round_num;
   int num_threads;
+  int num_produced;
   Matrix matrix;
   arma::umat indices;
   arma::mat copy_of_data; // Updated after the second round
+  std::vector<string> file_names;
 
   /**
    * Sort a particular column in ascending order.
    * @param data      The data whose column will be sorted in-place.
-   * @param indices   After this function is done, entry (i, col_index) will 
+   * @param indices   After this function is done, entry (i, col_
+   index) will
    *                  hold the original entry (i, col_index) before any sorting
    *                  was done.
    * @param col_index The column to sort.
@@ -105,7 +109,7 @@ class <?=$class_name?> {
   /**
    * Unsort a particular column given the pre-sort indices.
    * @param data      Reference to the data to unsort.
-   * @param indices   Reference to the indices as returned by 
+   * @param indices   Reference to the indices as returned by
    *                  reversible_column_sort.
    * @param col_index The column to sort.
    */
@@ -116,25 +120,21 @@ class <?=$class_name?> {
     }
   }
 
+  void init_col_names() {
+    int column = 0;
+    <?  foreach ($file_names as &$file_name) { ?>
+      file_names["<?=$file_name?>"] = column;
+      column++;
+    <?  } ?>
+  }
+
  public:
   <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
-
-<? if ($should_transpose) { ?>
-        std::cout << "Transposing matrix..." << std::endl;
-        <? if ($field_to_access != '') { ?> 
-          matrix = <?=$matrix?>.GetMatrix().<?=$field_to_access?>.t();
-        <? } else { ?>
-          matrix = <?=$matrix?>.GetMatrix().t();
-        <? } ?>
-<? } else { ?>
-        <? if ($field_to_access != '') { ?> 
-          matrix = <?=$matrix?>.GetMatrix().<?=$field_to_access?>;
-        <? } else { ?>
-          matrix = <?=$matrix?>.GetMatrix();
-        <? } ?>
-<? } ?> 
+    matrix = <?=$matrix?>.GetMatrix();
     round_num = 0;
+    num_produced = 0;
     indices = arma::umat(matrix.n_rows, matrix.n_cols);
+    init_col_names();
   }
 
   void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
@@ -149,11 +149,11 @@ class <?=$class_name?> {
       int n_rows = matrix.n_rows;
       this->num_threads = std::min(n_rows, suggested_num_workers);
     }
-    std::printf("Beginning round %d with %d workers.\n", round_num, 
+    std::printf("Beginning round %d with %d workers.\n", round_num,
       this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
     for (int counter = 0; counter < this->num_threads; counter++) {
-      worker = std::make_pair(new LocalScheduler(counter, round_num, 
+      worker = std::make_pair(new LocalScheduler(counter, round_num,
         this->num_threads, matrix), new cGLA(round_num));
       workers.push_back(worker);
     }
@@ -168,27 +168,24 @@ class <?=$class_name?> {
       if (round_num == 1) {
         reversible_column_sort(matrix, indices, index);
       } else if (round_num == 2) {
-        matrix.row(index).fill(accu(matrix.row(index)) / matrix.n_cols);    
+        matrix.row(index).fill(accu(matrix.row(index)) / matrix.n_cols);
       } else if (round_num == 3) {
         rearrange_column(matrix, indices, index);
       }
     }
   }
 
-  void GetResult(<?=typed_ref_args($output)?>) {
-    <? if ($should_transpose) { ?>
-      <?=array_keys($outputs)[0]?> = matrix.t();
-    <? } else { ?>
-      <?=array_keys($outputs)[0]?> = matrix;
-    <? } ?>
-  }
-
-  inline const Matrix& GetMatrix() const {
-    <? if ($should_transpose) { ?>
-      return matrix.t();
-    <? } else { ?>
-      return matrix;
-    <? } ?>
+  bool GetNextResult(<?=typed_ref_args($outputs_)?>) {
+    if (num_produced == matrix.n_elem) {
+      return false;
+    }
+    int row_index = num_produced / matrix.n_rows;
+    int col_index = num_produced % matrix.n_rows;
+    num_produced++;
+    file_name = file_names.at(col_index);
+    ordered_fid = row_index;
+    intensity = matrix(row_index, col_index);
+    return true;
   }
 };
 
