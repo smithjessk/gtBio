@@ -8,6 +8,7 @@ function Median_Polish(array $t_args, array $inputs, array $outputs,
       lookupType('base::int')];
     $outputs_ = array_combine(['file_name', 'intensity', 'fsetid'],
       $output_types);
+    $outputs = array_combine(array_keys($outputs), $output_types);
 
     $file_names = $t_args["files"];
     $num_files = sizeof($file_names);
@@ -27,9 +28,8 @@ function Median_Polish(array $t_args, array $inputs, array $outputs,
         'libraries'         => $libraries,
         'iterable'          => false,
         'input'             => $inputs,
-        'output'            => $output_types,
-        'result_type'       => 'fragment',
-        'finalize_as_state' => true,
+        'output'            => $outputs,
+        'result_type'       => 'multi',
         'properties'        => $properties,
         'extra'             => $extra,
     ];
