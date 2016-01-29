@@ -101,6 +101,10 @@ class <?=$className?> {
 <?  } ?>
   }
 
+  int get_col(std::string file_name) {
+    return file_names.at(file_name);
+  }
+
  public:
   <?=$className?>(const <?=$constantState?>& state)
     : constant_state(const_cast<<?=$constantState?> &>(state)), 
@@ -109,20 +113,12 @@ class <?=$className?> {
       init_col_names();
   }
 
-  int get_col(std::string file_name) {
-    try {
-      return file_names.at(file_name);
-    } catch (const std::out_of_range &oor) {
-      return -1;
-    }
-  }
-
   // if the fid was already entered for one column, use that row in the 
   // appropriate column. Else append it as a new row.
   void AddItem(<?=const_typed_ref_args($inputs_)?>) {
-    int col_index = get_col(file_name.ToString());
     num_fids_processed++;
-    set(ordered_fid, col_index, intensity);
+    int col_index = get_col(file_name.ToString());
+    constant_state.entries(ordered_fid, col_index) = intensity;
   }
 
   // For every entry that other has set, take that value and put it in our 
