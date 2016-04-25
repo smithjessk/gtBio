@@ -13,8 +13,6 @@ namespace gtBio {
 
 class CELBase {
 public:
-    using fmat = arma::fmat;
-    using imat = arma::Mat<int32_t>;
     using pointer = std::unique_ptr<CELBase>;
 
     /**
@@ -31,7 +29,7 @@ public:
      * of getStdDevMatrix()
      * @return A square float matrix representing the intensity measurements
      */
-    virtual fmat getIntensityMatrix() = 0;
+    virtual arma::fmat getIntensityMatrix() = 0;
 
     /**
      * Get the matrix representing the standard deviations of the intensity 
@@ -40,7 +38,7 @@ public:
      * @return A sqaure float matrix representing the standard deviations of 
      * the intensity measurements.
      */
-    virtual fmat getStdDevMatrix() = 0;
+    virtual arma::fmat getStdDevMatrix() = 0;
 
     /**
      * Get the matrix representing the number of pixels for each entry in the
@@ -49,9 +47,9 @@ public:
      * @return A sqaure short matrix representing number of pixels for each 
      * entry in the other two matrices (intensity and standard deviation)
      */
-    virtual imat getPixelsMatrix() = 0;
+    virtual arma::Mat<int32_t> getPixelsMatrix() = 0;
 };
 
 }
 
-#endif
+#endif // CEL_BASE_CLASS

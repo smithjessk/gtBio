@@ -8,15 +8,6 @@ A C++ library that provides extremely fast processing of bioinformatics data.
 For information on the directories contained in this project, see the [Package Structure](https://github.com/smithjessk/gtBio/wiki/Package-Structure) page.
 
 ## Building
-
-Note that this requires the Google Testing framework. For a sample way to install this, see the `.travis.yml` section "before_script."
-
-#### C++ Library ####
-
-```bash
-$ make core # To build the core C++ library
-$ make tests # To build the google tests
-```
     
 #### R Package ####
 
@@ -37,3 +28,9 @@ $ grokit makelib ../bio
 ```
 
 where `~/my/directory` is a folder R knows to search for libraries.
+
+## Testing 
+
+There are currently unresolved bugs in using `testthat`. So instead, the example scripts serve as tests. If they all execute normally, then `gtBio` is operational. 
+
+The demo data needed for these tests can be found in earlier versions of master. Soon we'll add an automated way to get this data.

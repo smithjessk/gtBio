@@ -24,7 +24,7 @@ private:
     off_t size;
     char* map;
 
-    int genFD(const char *fileName) {
+    int generatedFD(const char *fileName) {
         int fd = open(fileName, O_RDONLY);
         if (fd == -1) {
             perror("Error opening file for reading");
@@ -33,7 +33,7 @@ private:
         return fd;
     }
 
-    char* genMap(int fd, off_t size) {
+    char* generateMap(int fd, off_t size) {
         char *map = (char *) mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
         if (map == MAP_FAILED) {
             close(fd);
@@ -46,9 +46,9 @@ private:
 public:
     CELFileReader(const char *fileName) {
         fileName = fileName;
-        fd = genFD(fileName);
+        fd = generatedFD(fileName);
         size = lseek(fd, 0, SEEK_HOLE);
-        map = genMap(fd, size);
+        map = generateMap(fd, size);
     }
 
     /** Read the file referenced by this CELFileReader and return the result */
@@ -74,4 +74,4 @@ public:
 
 }
 
-#endif
+#endif // CEL_FILE_READER

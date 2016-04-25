@@ -1,85 +1,92 @@
 <?
 function Median_Polish($t_args, $outputs, $states) {
-    $className = generate_name('Median_Polish');
+    $class_name = generate_name('Median_Polish');
+    $cgla_name = generate_name('ConvergenceGLA');
     $matrix = array_keys($states)[0];
-    $matrixType = array_values($states)[0];
-    $innerType = $matrixType->get('type');
-    $shouldTranspose = get_default($t_args, 'shouldTranspose', False);
-    $fieldToAccess = get_default($t_args, 'fieldToAccess', '');
-    if ($fieldToAccess != '') {
-      $fieldToAccess = '.' + $fieldToAccess;
+    $field_to_access = get_default($t_args, 'field_to_access', '');
+    if ($field_to_access != '') {
+      $field_to_access = '.' + $field_to_access;
     }
-    $output = ['polished_matrix' => lookupType('bio::Variable_Matrix', 
-      ['type' => $innerType])];
-
+    $matrix_type = array_values($states)[0];
+    $inner_type = array_values($states)[0]->get('type');
+    $should_transpose = get_default($t_args, 'should_transpose', False);
+    $output = array_combine(array_keys($outputs), [
+      lookupType('statistics::Variable_Matrix', ['type' => $inner_type]
+    )]);
     $identifier = [
         'kind'  => 'GIST',
-        'name'  => $className,
+        'name'  => $class_name,
         'system_headers' => ['armadillo', 'algorithm'],
         'libraries'     => ['armadillo'],
         'iterable'      => true,
         'output'        => $output,
         'result_type'   => 'single',
+        'properties'      => ['matrix'],
+        'intermediates'   => false,
+        'extras'          => $matrix_type->extras(),
     ];
 ?>
 
-class ConvergenceGLA {
+class <?=$cgla_name?> {
  public:
-  int roundNum;
-  bool convergingThisRound;
+  int round_num;
+  bool converging_this_round;
 
-  ConvergenceGLA(int num) :
-      roundNum(num),
-      convergingThisRound(true) {}
+  <?=$cgla_name?>(int num) :
+      round_num(num),
+      converging_this_round(true) {}
 
-  void AddState(ConvergenceGLA other) {
-    convergingThisRound = convergingThisRound && other.convergingThisRound;
+  void AddState(<?=$cgla_name?> other) {
+    converging_this_round = converging_this_round && 
+      other.converging_this_round;
   }
 
   // TODO: Add better converging conditions
   bool ShouldIterate() {
-    return roundNum < 5;
+    std::printf("Returning %d for ShouldIterate because round_num = %d\n", round_num < 5, round_num);
+    return round_num < 5;
   }
 };
 
-class <?=$className?> {
+class <?=$class_name?> {
  public:
   // We don't know what type of matrix we will be passed, so it is best to be
   // type-agnostic.
-  using InnerType = <?=$innerType?>;
-  using Matrix = <?=$matrixType?>::Matrix;
-  using cGLA = ConvergenceGLA;
+  using Inner = <?=$inner_type?>;
+  using Matrix = arma::Mat<Inner>;
+  using cGLA = <?=$cgla_name?>;
 
   struct Task {
-    long startIndex; // Which row or column this local scheduler starts at
-    long endIndex; // Which row/col it ends at. Inclusive bound.
+    long start_index; // Which row or column this local scheduler starts at
+    long end_index; // Which row or column it ends at. Inclusive bound.
   };
 
   struct LocalScheduler {
-    int threadIndex;
-    bool finishedScheduling;
-    int numThreads;
-    int &roundNum;
+    int thread_index;
+    bool finished_scheduling;
+    int num_threads;
+    int &round_num;
     Matrix &matrix;
 
-    LocalScheduler(int index, int &roundNum, int numThreads, Matrix &matrix) :
-        threadIndex(index),
-        finishedScheduling(false),
-        numThreads(numThreads),
-        roundNum(roundNum),
+    LocalScheduler(int index, int &round_num, int num_threads, 
+      Matrix &matrix) :
+        thread_index(index),
+        finished_scheduling(false),
+        num_threads(num_threads),
+        round_num(round_num),
         matrix(matrix) {}
 
     bool GetNextTask(Task& task) {
-      bool ret = !finishedScheduling;
+      bool ret = !finished_scheduling;
       long count;
-      if (roundNum % 2 == 1) {
+      if (round_num % 2 == 1) {
         count = matrix.n_rows;
       } else {
         count = matrix.n_cols;
       }
-      task.startIndex = threadIndex * count / numThreads;
-      task.endIndex = (threadIndex + 1) * count / numThreads - 1;
-      finishedScheduling = true;
+      task.start_index = thread_index * count / num_threads;
+      task.end_index = (thread_index + 1) * count / num_threads - 1;
+      finished_scheduling = true;
       return ret;
     }
   };
@@ -89,62 +96,70 @@ class <?=$className?> {
 
  private:
   // Without a limit on the number of iterations, the process could never end.
-  int roundNum;
-  int numThreads;
+  int round_num;
+  int num_threads;
   Matrix matrix;
 
   void RowPolish(Task& task, cGLA& gla) {
-    int start = task.startIndex;
-    int end = task.endIndex;
-    arma::Col<InnerType> medVal = 
+    int start = task.start_index;
+    int end = task.end_index;
+    arma::Col<Inner> med_val = 
       median(matrix.submat(start, 0, end, matrix.n_cols - 1), 1);
-    arma::Col<InnerType> med(matrix.n_cols);
-    med.fill(medVal(0, 0));
-    matrix.submat(start, 0, end, matrix.n_cols - 1) -= med.t();
+    for (size_t i = 0; i < end - start; i++) {
+      matrix.row(start + i) -= med_val(i);
+    }
   }
 
   void ColPolish(Task& task, cGLA& gla) {
-    int start = task.startIndex;
-    int end = task.endIndex;
-    arma::Col<InnerType> medVal = 
+    int start = task.start_index;
+    int end = task.end_index;
+    arma::Row<Inner> med_val = 
       median(matrix.submat(0, start, matrix.n_rows - 1, end), 0);
-    arma::Col<InnerType> med(matrix.n_rows);
-    med.fill(medVal(0, 0));
-    matrix.submat(0, start, matrix.n_rows - 1, end) -= med;
+    for (size_t i = 0; i < end - start; i++) {
+      matrix.col(start + i) -= med_val(i);
+    }
   }
 
  public:
-  <?=$className?>(<?=const_typed_ref_args($states)?>) {
+  <?=$class_name?>(<?=const_typed_ref_args($states)?>) {
 
-<? if ($shouldTranspose) { ?>
+<? if ($should_transpose) { ?>
         std::cout << "Transposing matrix..." << std::endl;
-        matrix = <?=$matrix?>.GetMatrix()<?=$fieldToAccess?>.t();
+        <? if ($field_to_access != '') { ?> 
+          matrix = <?=$matrix?>.GetMatrix().<?=$field_to_access?>.t();
+        <? } else { ?>
+          matrix = <?=$matrix?>.GetMatrix().t();
+        <? } ?>
 <? } else { ?>
-        matrix = <?=$matrix?>.GetMatrix()<?=$fieldToAccess?>;
+        <? if ($field_to_access != '') { ?> 
+          matrix = <?=$matrix?>.GetMatrix().<?=$field_to_access?>;
+        <? } else { ?>
+          matrix = <?=$matrix?>.GetMatrix();
+        <? } ?>
 <? } ?> 
-        roundNum = 0;
-      }
+    round_num = 0;
+  }
 
   // Advance the round number and distribute work among the threads
-  void PrepareRound(WorkUnits& workers, int numThreads) {
-    roundNum++;
+  void PrepareRound(WorkUnits& workers, int suggested_num_workers) {
+    round_num++;
     arma::uword n_rows = matrix.n_rows;
     arma::uword n_cols = matrix.n_cols;
-    int minDimension = std::min(n_rows, n_cols);
-    this->numThreads = std::min(minDimension, numThreads);
-    std::cout << "Beginning round " << roundNum << " with " << this->numThreads
-      << " workers." << std::endl;
+    int min_dimension = std::min(n_rows, n_cols);
+    this->num_threads = std::min(min_dimension, suggested_num_workers);
+    std::printf("Beginning round %d with %d workers.\n", round_num, 
+      this->num_threads);
     std::pair<LocalScheduler*, cGLA*> worker;
-    for (int counter = 0; counter < this->numThreads; counter++) {
-      worker = std::make_pair(new LocalScheduler(counter, roundNum, 
-        this->numThreads, matrix), new cGLA(roundNum));
+    for (int counter = 0; counter < this->num_threads; counter++) {
+      worker = std::make_pair(new LocalScheduler(counter, round_num, 
+        this->num_threads, matrix), new cGLA(round_num));
       workers.push_back(worker);
     }
   }
 
   // If round number is odd, do a row polish. Otherwise, do a column polish.
   void DoStep(Task& task, cGLA& gla) {
-    if (roundNum % 2 == 1) {
+    if (round_num % 2 == 1) {
       RowPolish(task, gla);
     } else {
       ColPolish(task, gla);
@@ -152,7 +167,19 @@ class <?=$className?> {
   }
 
   void GetResult(<?=typed_ref_args($output)?>) {
-    polished_matrix = matrix;
+    <? if ($should_transpose) { ?>
+      <?=array_keys($outputs)[0]?> = matrix.t();
+    <? } else { ?>
+      <?=array_keys($outputs)[0]?> = matrix;
+    <? } ?>
+  }
+
+  inline const Matrix& GetMatrix() const {
+    <? if ($should_transpose) { ?>
+      return matrix.t();
+    <? } else { ?>
+      return matrix;
+    <? } ?>
   }
 };
 

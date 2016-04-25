@@ -44,7 +44,7 @@ public:
 
 class TopHeader2 {
     struct TopHeader2Data {
-        int32_t margin; // cell margin used for computign the cell intensity value
+        int32_t margin; // cell margin to compute the cell intensity value
         uint32_t numOutliers; // Number of outlier cells.
         uint32_t numMaskedCells; // Number of masked cells.
         int32_t	numSubgrids;
@@ -133,10 +133,10 @@ public:
         return header.getMagic();
     }
 
-    fmat getIntensityMatrix() override {
+    arma::fmat getIntensityMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
-        fmat ret(numRows, numCols);
+        arma::fmat ret(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getIntensity(i, j);
@@ -145,10 +145,10 @@ public:
         return ret;
     }
 
-    fmat getStdDevMatrix() override {
+    arma::fmat getStdDevMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
-        fmat ret(numRows, numCols);
+        arma::fmat ret(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getStdDev(i, j);
@@ -157,10 +157,10 @@ public:
         return ret;
     }
 
-    imat getPixelsMatrix() override {
+    arma::Mat<int32_t> getPixelsMatrix() override {
         int32_t numRows = header.getNumRows();
         int32_t numCols = header.getNumCols();
-        imat ret(numRows, numCols);
+        arma::Mat<int32_t> ret(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 ret(i, j) = cells.getPixels(i, j);

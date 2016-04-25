@@ -324,12 +324,12 @@ public:
      * Read the intensity values and transform them from little endian to big
      * @return A square matrix in row-major order 
      */
-    fmat getIntensityMatrix() override {
+    arma::fmat getIntensityMatrix() override {
       char* dStart = dataSets.get(0).getDataStart();
 
       // Square matrix
       uint32_t sideLength = sqrt(dataSets.get(0).getNumRows()); 
-      fmat ret((float*) dStart, sideLength, sideLength); 
+      arma::fmat ret((float*) dStart, sideLength, sideLength); 
         
       ret.transform([] (float &val) {
         return fromBEtoFloat((char*) &val); // Big endian to little 
@@ -338,11 +338,11 @@ public:
       return ret.t(); // Column-major to row-major
     }
 
-    fmat getStdDevMatrix() override {
+    arma::fmat getStdDevMatrix() override {
         char* dStart = dataSets.get(1).getDataStart();
 
         uint32_t sideLength = sqrt(dataSets.get(1).getNumRows());
-        fmat ret((float*) dStart, sideLength, sideLength);
+        arma::fmat ret((float*) dStart, sideLength, sideLength);
 
         ret.transform([] (float &val) {
             return fromBEtoFloat((char*) &val); // Big endian to little
@@ -351,7 +351,7 @@ public:
         return ret.t(); // Column-major to row-major
     }
 
-    imat getPixelsMatrix() override {
+    arma::Mat<int32_t> getPixelsMatrix() override {
         char* dStart = dataSets.get(2).getDataStart();
 
         uint32_t sideLength = sqrt(dataSets.get(2).getNumRows());
@@ -361,7 +361,7 @@ public:
             return fromBEtoShort((uint8_t*) &val);
         });
 
-        imat ret(sideLength, sideLength);
+        arma::Mat<int32_t> ret(sideLength, sideLength);
         for (int i = 0; i < sideLength; i++) {
             for (int j = 0; j < sideLength; j++) {
                 ret(i, j) = temp(i, j);
