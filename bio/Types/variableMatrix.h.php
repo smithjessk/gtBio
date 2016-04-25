@@ -43,7 +43,7 @@ function Variable_Matrix(array $t_args) {
         'unary_operators'  => [],
         'global_content'   => '',
         'complex'          => "ColumnVarIterator<@type, 8, 8>",
-        'properties'       => ['matrix'],
+        'properties'       => ['matrix', 'armadillo'],
         'extra'            => ['type' => $type],
         'describe_json'    => DescribeJson('matrix', $innerDesc),
     ];
@@ -81,14 +81,16 @@ inline size_t SerializedSize(const @type& src) {
 }
 
 template<>
-inline size_t Deserialize(const char* buffer, @type& src) {
+inline size_t Deserialize(const char* buffer, @type& dest) {
   uint32_t nRows = ((uint32_t*) buffer)[0];
   uint32_t nCols = ((uint32_t*) buffer)[1];
 
-  src.set_size(nRows, nCols);
-  const <?=$type?>* asInnerType = 
-    reinterpret_cast<const <?=$type?>*>(buffer + 8);
-  std::copy(asInnerType, asInnerType + (nRows * nCols), src.memptr());
+  // The last argument, strict = false, is needed because the size of ref will
+  // change during the swap.
+  @type ref((<?=$type?>*) (buffer + 8), nRows, nCols, false, false);
+  // The contents are swapped. This should only copy in the case that the
+  // contents are ref are stored locally, meaning it is a small matrix.
+  dest.swap(ref);
 
   return 8 + (nRows * nCols * sizeof(<?=$type?>));
 }
